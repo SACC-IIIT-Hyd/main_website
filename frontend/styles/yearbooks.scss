@@ -62,12 +62,14 @@
   justify-content: flex-end;
   position: absolute;
   bottom: 0;
+
   h2 {
     font-size: 5rem;
     font-weight: 700;
     margin: 0;
     line-height: 1;
   }
+
   h4 {
     font-size: 3rem;
     margin: 0;
@@ -93,35 +95,121 @@
   object-fit: contain;
 }
 
+
+
+
+// Alumni Preview Styles (similar to yearbook covers)
+.alumniPreview {
+  width: 100%;
+  max-width: 450px;
+  aspect-ratio: 1/1.414;
+  border: 2px solid #8F5A33;
+  border-radius: 13px;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: linear-gradient(135deg, #8B4A73 0%, #C85A3E 50%, #8F5A33 100%);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+}
+
+.alumniPreview:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border-color: #F87272;
+}
+
+.alumniLabel {
+  width: 100%;
+  height: 43%;
+  border-radius: 11px;
+  color: #D7C8AD;
+  font-size: clamp(0.5rem, 2.5vw, 1.5rem);
+  background-color: rgba(200, 125, 72, 0.95);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+
+  h2 {
+    font-size: 5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  h4 {
+    font-size: 3rem;
+    margin: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+.alumni-pattern-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath fill='%23ffffff' fill-opacity='0.08' d='M20 20h40v40H20V20zm20 35a15 15 0 1 1 0-30 15 15 0 0 1 0 30z'/%3E%3Cpath fill='%23ffffff' fill-opacity='0.04' d='M0 0h20v20H0V0zm60 60h20v20H60V60z'/%3E%3C/svg%3E");
+  opacity: 0.7;
+  z-index: 1;
+}
+
 // Responsive breakpoints
 @media (max-width: 900px) {
-  .backdrop { padding-top: 60px; }
-  .yearbooksGrid { padding: 0 15px; }
-  .yearbookPreview { max-width: 300px; }
+  .backdrop {
+    padding-top: 60px;
+  }
+
+  .yearbooksGrid {
+    padding: 0 15px;
+  }
+
+  .yearbookPreview {
+    max-width: 300px;
+  }
 }
 
 @media (max-width: 600px) {
-  .backdrop { padding-top: 40px; }
+  .backdrop {
+    padding-top: 40px;
+  }
+
   .yearbook-container {
     flex-direction: column;
     align-items: center;
     padding: 0 15px;
   }
+
   .text-content {
     max-width: 100%;
     text-align: center;
   }
-  .image { display: none; }
+
+  .image {
+    display: none;
+  }
+
   .yearbooksGrid {
     width: 100%;
     padding: 0 5px;
     margin-bottom: clamp(40px, 10vw, 80px);
   }
+
   .yearbookPreview {
     max-width: 300px;
     margin: 0 auto;
     border-radius: 10px;
   }
+
   .yearbookLabel {
     border-radius: 8px;
     padding: 6px 12px 6px 6px;
@@ -130,8 +218,138 @@
     h4 {
       font-size: 2.3rem;
     }
+
     h2 {
       font-size: 3.7rem;
+    }
+  }
+
+  // Alumni Cards Styles
+  .alumni-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    width: 95%;
+    margin-bottom: clamp(60px, 15vw, 123px);
+    padding: 0 10px;
+  }
+
+  .alumni-card-link {
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    max-width: 350px;
+    min-width: 280px;
+  }
+
+  .alumni-card {
+    width: 100%;
+    height: 200px;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #8B4A73 0%, #C85A3E 50%, #8F5A33 100%);
+    border: 2px solid #8F5A33;
+    cursor: pointer;
+  }
+
+  .alumni-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    border-color: #F87272;
+  }
+
+  .alumni-card-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(139, 74, 115, 0.9) 0%, rgba(200, 90, 62, 0.9) 50%, rgba(143, 90, 51, 0.9) 100%);
+  }
+
+  .alumni-year-badge {
+    text-align: center;
+    z-index: 2;
+    position: relative;
+  }
+
+  .batch-text {
+    display: block;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    color: #EFDFC2;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .year-text {
+    display: block;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    color: #FFFFFF;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .alumni-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/svg%3E");
+    opacity: 0.6;
+    z-index: 1;
+  }
+
+  .no-alumni-message {
+    text-align: center;
+    margin-top: 40px;
+    width: 100%;
+  }
+
+  .no-alumni-message h3 {
+    color: #bba6d6;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+  }
+
+  // Responsive adjustments for alumni cards
+  @media (max-width: 900px) {
+    .alumni-container {
+      gap: 1.5rem;
+      padding: 0 15px;
+    }
+
+    .alumni-card-link {
+      max-width: 300px;
+      min-width: 250px;
+    }
+
+    .alumni-card {
+      height: 180px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .alumni-container {
+      gap: 1rem;
+      padding: 0 5px;
+      margin-bottom: clamp(40px, 10vw, 80px);
+    }
+
+    .alumni-card-link {
+      max-width: 280px;
+      min-width: 220px;
+    }
+
+    .alumni-card {
+      height: 160px;
+      border-radius: 12px;
     }
   }
 }

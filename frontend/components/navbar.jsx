@@ -34,7 +34,7 @@ const NavbarComponent = ({ isSticky = false }) => {
     {
       href: authenticated ? '/yearbooks' : '/api/login',
       label: 'Yearbooks'
-    }
+    },
   ];
 
   return (
@@ -57,19 +57,31 @@ const NavbarComponent = ({ isSticky = false }) => {
 
         <div className={`navbar-collapse ${isMenuOpen ? 'show' : ''}`}>
           <div className="navbar-nav">
-            {navItems.map((item) => (
+            {navItems.map((item, idx) => (
               <a
                 key={item.href}
                 href={item.href}
                 className="nav-link"
+                target={item.label === 'Alumni' ? '_blank' : undefined}
+                rel={item.label === 'Alumni' ? 'noopener noreferrer' : undefined}
               >
                 {item.label}
               </a>
             ))}
             {authenticated && (
+              <a
+                href="/alumni"
+                className="nav-link"
+                style={{ order: 4 }}
+              >
+                Alumni
+              </a>
+            )}
+            {authenticated && (
               <button
                 onClick={handleLogout}
                 className="logout-btn mobile-logout"
+                style={{ order: 5 }}
               >
                 Logout
               </button>
