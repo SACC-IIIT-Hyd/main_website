@@ -1,0 +1,21 @@
+body {
+  background-color: #f0f0f0;
+}
+
+.carousel {
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.carousel-item {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.carousel-item img {
+  transition: transform .2s;
+}
+
+.carousel-item:hover img {
+  transform: scale(1.1);
+}

@@ -1,0 +1,154 @@
+.header-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(46, 33, 42);
+  z-index: 1000;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1rem;
+  position: relative;
+}
+
+.navbar-brand .logo {
+  width: 150px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-content {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.navbar-toggler {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.25rem;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-size: 1.5rem;
+}
+
+.nav-link:hover {
+  color: #6699ee;
+  text-decoration: underline;
+}
+
+.login-link:hover,
+.logout-btn:hover {
+  color: #6699ee;
+  border: 1px solid #6699ee;
+}
+
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  width: 150px;
+  justify-content: flex-end;
+}
+
+.logout-btn,
+.login-link {
+  color: white;
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+  border: 1px solid white;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mobile-logout,
+.mobile-login {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .navbar-container {
+    align-items: space-between;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .navbar-content {
+    align-items: center;
+    justify-content: right;
+  }
+
+  .navbar-toggler {
+    display: block;
+  }
+
+  .navbar-collapse {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background-color: rgba(46, 33, 42);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .navbar-collapse.show {
+    max-height: 500px; /* Adjust this value based on the content height */
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .desktop-logout,
+  .desktop-login {
+    display: none;
+  }
+
+  .mobile-logout,
+  .mobile-login {
+    display: block;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+    margin-right: 0;
+  }
+
+  .navbar-auth {
+    display: none;
+  }
+
+  .nav-link {
+    margin: 0.5rem;
+  }
+}

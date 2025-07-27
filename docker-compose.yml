@@ -1,0 +1,36 @@
+
+
+services:
+
+    backend:
+        build:
+            context: ./backend
+        env_file:
+            - ./.env
+        volumes:
+            - ./backend:/app
+        tty: true
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: dev.Dockerfile
+        env_file:
+            - ./.env
+        volumes:
+            - ./frontend:/app
+        tty: true
+
+    nginx:
+        build: ./nginx/
+        restart: unless-stopped
+        ports:
+            - 80:80
+            # - 443:443
+        depends_on:
+            - backend
+            - frontend
+
+
+
+

@@ -1,0 +1,21 @@
+@keyframes letterReveal {
+    0% {
+        color: #2d1d28;
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes underlineReveal {
+    0% {
+      width: 0;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+  

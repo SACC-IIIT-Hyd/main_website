@@ -1,0 +1,114 @@
+#sacc {
+  background-color: #2E212A;
+  padding: 37px;
+  padding-left: 15vw;
+  padding-right: 15vw;
+  text-align: center;
+  color: white;
+}
+
+.footerContent {
+  width: 100%;
+  max-width: 1300px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 37px;
+  
+  @media (max-width: 786px) {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+.about {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  @media (max-width: 786px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.aboutLogo {
+  width: 123px;
+  height: 123px;
+  
+  @media (max-width: 786px) {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+  }
+}
+
+.aboutText {
+  max-width: 370px;
+  width: 100%;
+  font-size: 1.3em;
+  margin-left: 20px;
+  text-align: left;
+  margin-bottom: 0;
+  
+  @media (max-width: 786px) {
+    font-size: 1.2em;
+    margin-left: 0;
+    text-align: center;
+    margin-bottom: 37px;
+  }
+}
+
+.reach {
+  text-align: right;
+  color: white;
+  
+  @media (max-width: 786px) {
+    text-align: center;
+  }
+}
+
+.reachHeading {
+  font-size: 1.5rem;
+  font-weight: 786;
+  margin-bottom: 0;
+}
+
+.reachText {
+  font-size: 1.3rem;
+  
+  @media (max-width: 786px) {
+    font-size: 1.1rem;
+    margin-bottom: 37px;
+  }
+}
+
+.social {
+  text-align: center;
+  margin-top: 13px;
+}
+
+.social-icon {
+  margin: 0 20px;
+  display: inline-block;
+  width: 37px;
+  height: 37px;
+  
+  @media (max-width: 786px) {
+    margin: 0 10px;
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.copyright {
+  width: 100%;
+  background-color: #423238;
+  color: white;
+  text-align: center;
+  margin: 0;
+}
+
+.copyText {
+  padding: 5px;
+}

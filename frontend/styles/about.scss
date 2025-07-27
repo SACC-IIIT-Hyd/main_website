@@ -1,0 +1,191 @@
+.about-container {
+  background-color: #1D141A;
+  color: white;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Verticall line styling */
+.vertical-line {
+  position: absolute;
+  left: 5%;
+  top: 0;
+  width: 10px;
+  background-color: #FF6363;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.about-content-cover {
+  width: 100%;
+  border-bottom: 10px solid #FF6363;
+  margin-top: 68px;
+  padding: 0 5%;
+  margin-bottom: 5rem;
+}
+
+/* Title Styling */
+.aboutTitle {
+  margin-left: 11vw;
+  margin-top: 15vh;
+
+  .title-container {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+      position: relative;
+  }
+
+  .title-letters {
+      color: rgba(248, 114, 114, 1);
+      font-size: 5rem;
+      font-weight: bold;
+      font-family: "Noto Sans", serif;
+  }
+
+  .underline {
+      content: "";
+      display: block;
+      position: absolute;
+      height: 4px;
+      margin-top: 1vh;
+      background-color: #ffe4c4;
+  }
+
+  @media screen and (max-width: 768px) {
+      margin-left: 0;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      .underline {
+          height: 2px;
+          margin-top: 9vh;
+      }
+
+      .title-letters {
+          font-size: 3rem;
+      }
+  }
+}
+
+/* Content Styling */
+.description-container {
+  margin-left: 11vw;
+  margin-top: 11vh;
+  margin-bottom: 11vh;
+  width: 69%;
+
+  @media (max-width: 768px) {
+    margin-left: 3vw;
+    width: calc(100% - 6vw);
+    margin-top: 7vh;
+  }
+}
+
+.aboutContent {
+  color: #EAEAEA;
+  line-height: 1.8;
+  text-align: justify;
+  font-size: 1.5rem;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    font-size: 1.1rem;
+  }
+}
+
+
+/* SACC Logo */
+.logo-container {
+  position: absolute;
+  top: 15vh;
+  right: 3.7%;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+
+  img {
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 99, 99, 0.69);
+  }
+}
+
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  filter: blur(5px);
+  opacity: 0.7;
+}
+
+/* Socials */
+.social-section {
+  margin-top: 7vh;
+  margin-bottom: 5rem;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+
+  h2 {
+    font-weight: bold;
+    font-size: 2rem;
+    color: #FF6363;
+    margin-bottom: 10px;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+
+  @media (max-width: 768px) {
+    gap: 15px;
+  }
+
+  img {
+    width: 60px;
+    height: 60px;
+
+    @media (max-width: 768px) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+}
+
+/* Oval Background */
+.oval-background {
+  position: absolute;
+  top: 1vh;
+  left: 10vw;
+  width: 69vw;
+  height: 37vw;
+  background-color: #29212D;
+  border-radius: 50%;
+  transform: rotate(-45deg);
+  border: 5px solid #FF6363;
+  box-shadow: 0 0 15px rgba(255, 99, 99, 0.5);
+  z-index: 0;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
