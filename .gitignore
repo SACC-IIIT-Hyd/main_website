@@ -6,3 +6,6 @@ venv/
 .venv/
 .vscode/
 logs/
+backups/
+*.sql
+*.sql.gz
