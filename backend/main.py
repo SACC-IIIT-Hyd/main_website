@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api.v1 import auth, trial
+from app.api.v1 import auth, trial, connect
 from app.core.config import get_settings
 from app.core.exceptions import SACCBackendException
 from app.core.logging import configure_logging, get_logger
@@ -262,6 +262,12 @@ app.include_router(
     trial.router,
     prefix=settings.api_v1_prefix,
     tags=["Trial"]
+)
+
+app.include_router(
+    connect.router,
+    prefix=settings.api_v1_prefix,
+    tags=["Connect"]
 )
 
 

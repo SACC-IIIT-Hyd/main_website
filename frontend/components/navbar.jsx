@@ -35,6 +35,7 @@ const NavbarComponent = ({ isSticky = false }) => {
       href: authenticated ? '/yearbooks' : '/api/login',
       label: 'Yearbooks'
     },
+    ...(authenticated ? [{ href: '/connect', label: 'Connect' }] : []),
   ];
 
   return (
