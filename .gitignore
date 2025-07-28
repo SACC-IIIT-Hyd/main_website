@@ -5,3 +5,4 @@ MACOSX/
 venv/
 .venv/
 .vscode/
+logs/
