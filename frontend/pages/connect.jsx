@@ -209,26 +209,27 @@ const ConnectPage = () => {
             <p className="subtitle">Connect with fellow IIITH alumni across various platforms</p>
           </div>
 
-          {/* Admin Controls */}
-          <div className="admin-controls">
+          {/* Floating Admin Buttons */}
+          <div className="floating-admin-buttons">
             {userRoles.is_community_admin && (
-              <Button
-                variant="outline"
-                className="admin-button"
+              <button
+                className="floating-admin-btn community-admin-btn"
                 onClick={() => setShowCommunityAdminPanel(true)}
+                title="Community Admin Panel"
               >
                 <Settings className="icon" />
-                Admin Panel
-              </Button>
+                <span className="btn-text">Community Admin</span>
+              </button>
             )}
             {userRoles.is_super_admin && (
-              <Button
-                className="admin-button"
+              <button
+                className="floating-admin-btn super-admin-btn"
                 onClick={() => setShowSuperAdminPanel(true)}
+                title="Super Admin Panel"
               >
                 <Plus className="icon" />
-                Super Admin
-              </Button>
+                <span className="btn-text">Super Admin</span>
+              </button>
             )}
           </div>
         </div>

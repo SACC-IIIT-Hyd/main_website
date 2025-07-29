@@ -548,7 +548,7 @@ async def get_user_roles(
         }
     )
 
-    roles = connect_service.get_user_roles(user.email)
+    roles = await connect_service.get_user_roles(user.email)
 
     logger.info(
         "User roles fetched successfully",
@@ -562,6 +562,91 @@ async def get_user_roles(
     )
 
     return roles
+
+
+@router.get("/communities/{community_id}/admins")
+async def get_community_admins(
+    community_id: int,
+    user: UserResponse = Depends(get_current_user),
+    connect_service: ConnectService = Depends(get_connect_service)
+):
+    """
+    Get list of admins for a specific community (super admin only).
+
+    Args:
+        community_id: Community ID
+        user: Current authenticated user (must be super admin)
+        connect_service: Connect service instance
+
+    Returns:
+        List[Dict]: List of community admins
+    """
+    logger.info(
+        "Fetching community admins",
+        extra={
+            "user_uid": user.uid,
+            "email_id": user.email,
+            "community_id": community_id,
+            "component": "connect_api"
+        }
+    )
+
+    admins = await connect_service.get_community_admins(community_id, user.email)
+
+    logger.info(
+        "Community admins fetched successfully",
+        extra={
+            "user_uid": user.uid,
+            "email_id": user.email,
+            "community_id": community_id,
+            "admins_count": len(admins),
+            "component": "connect_api"
+        }
+    )
+
+    return admins
+
+
+@router.delete("/community-admins/{admin_id}")
+async def remove_community_admin(
+    admin_id: int,
+    user: UserResponse = Depends(get_current_user),
+    connect_service: ConnectService = Depends(get_connect_service)
+):
+    """
+    Remove a community admin (super admin only).
+
+    Args:
+        admin_id: Admin record ID to remove
+        user: Current authenticated user (must be super admin)
+        connect_service: Connect service instance
+
+    Returns:
+        Dict: Success status
+    """
+    logger.info(
+        "Removing community admin",
+        extra={
+            "user_uid": user.uid,
+            "email_id": user.email,
+            "admin_id": admin_id,
+            "component": "connect_api"
+        }
+    )
+
+    await connect_service.remove_community_admin(admin_id, user.email)
+
+    logger.info(
+        "Community admin removed successfully",
+        extra={
+            "user_uid": user.uid,
+            "email_id": user.email,
+            "admin_id": admin_id,
+            "component": "connect_api"
+        }
+    )
+
+    return {"success": True, "message": "Community admin removed successfully"}
 
 
 # Health check endpoint for the connect service

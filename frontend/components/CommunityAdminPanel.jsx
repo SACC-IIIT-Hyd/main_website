@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Users, X, Search, CheckCircle, XCircle, Edit, Save, Upload } from 'lucide-react';
 import '@/styles/CommunityAdminPanel.scss';
 
 const CommunityAdminPanel = ({ onClose }) => {
@@ -65,47 +66,7 @@ const CommunityAdminPanel = ({ onClose }) => {
             </div>
           </div>
           <div className="panel-content">
-            {/* Community management details would go here */}
-            <div className="form-section">
-              <h3 className="section-title">Community Details</h3>
-              <p className="section-description">
-                Manage community settings, verify join requests, and monitor activity.
-              </p>
-              <div className="community-card" style={{ cursor: 'default' }}>
-                <div className="card-header">
-                  <div className="community-info">
-                    <span className="community-icon">
-                      {selectedCommunity.icon || '🌐'}
-                    </span>
-                    <h3 className="community-name">{selectedCommunity.name}</h3>
-                  </div>
-                </div>
-                <div className="card-content">
-                  <p className="community-description">
-                    {selectedCommunity.description}
-                  </p>
-                  <div className="community-meta">
-                    <span className="platform-badge">
-                      {selectedCommunity.platform_type}
-                    </span>
-                    <span className="member-count">
-                      <Users className="icon" />
-                      {selectedCommunity.member_count} members
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="admin-alert info">
-              <div className="alert-content">
-                <h4 className="alert-title">Community Management Features</h4>
-                <p className="alert-message">
-                  Full community management features are coming soon. You'll be able to verify join requests,
-                  manage member roles, and update community settings from this panel.
-                </p>
-              </div>
-            </div>
+            <CommunityManagement community={selectedCommunity} />
           </div>
         </div>
       </div>
@@ -191,6 +152,296 @@ const CommunityAdminPanel = ({ onClose }) => {
             </>
           )}
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Community Management Component
+const CommunityManagement = ({ community }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: community.name,
+    description: community.description,
+    tags: community.tags.join(', '),
+    member_count: community.member_count,
+    invite_link: community.invite_link || '',
+    identifier_format_instruction: community.identifier_format_instruction,
+    icon: community.icon || ''
+  });
+  const [identifierValue, setIdentifierValue] = useState('');
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
+
+  const handleUpdate = async () => {
+    setUpdateLoading(true);
+    try {
+      const updatePayload = {
+        ...editData,
+        tags: editData.tags ? editData.tags.split(',').map(tag => tag.trim()) : [],
+        member_count: parseInt(editData.member_count) || 0
+      };
+
+      const response = await fetch(`/api/connect/communities/${community.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(updatePayload)
+      });
+
+      if (response.ok) {
+        alert('Community updated successfully!');
+        setIsEditing(false);
+        // Update the community object (would need to be passed up to parent)
+        Object.assign(community, await response.json());
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error || error.detail || 'Failed to update community'}`);
+      }
+    } catch (error) {
+      console.error('Error updating community:', error);
+      alert('Failed to update community. Please try again.');
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const handleVerifyIdentifier = async () => {
+    if (!identifierValue.trim()) {
+      alert('Please enter an identifier to verify');
+      return;
+    }
+
+    setVerificationLoading(true);
+    try {
+      const response = await fetch(`/api/connect/communities/${community.id}/verify-identifier`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ identifier: identifierValue.trim() })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setVerificationResult(result);
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error || error.detail || 'Failed to verify identifier'}`);
+      }
+    } catch (error) {
+      console.error('Error verifying identifier:', error);
+      alert('Failed to verify identifier. Please try again.');
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  return (
+    <div className="community-management">
+      {/* Identifier Verification Section */}
+      <div className="form-section">
+        <h3 className="section-title">Verify Join Request</h3>
+        <p className="section-description">
+          Enter an identifier to check if any alumnus has applied to join this community with that identifier.
+        </p>
+        
+        <div className="verification-form">
+          <div className="input-group">
+            <Input
+              value={identifierValue}
+              onChange={(e) => setIdentifierValue(e.target.value)}
+              placeholder="Enter identifier to verify (email, phone, etc.)"
+              className="verification-input"
+            />
+            <Button 
+              onClick={handleVerifyIdentifier}
+              disabled={verificationLoading}
+              className="verify-button"
+            >
+              <Search className="icon" />
+              {verificationLoading ? 'Verifying...' : 'Verify'}
+            </Button>
+          </div>
+
+          {verificationResult && (
+            <div className={`verification-result ${verificationResult.found ? 'found' : 'not-found'}`}>
+              {verificationResult.found ? (
+                <div className="result-content">
+                  <CheckCircle className="result-icon success" />
+                  <div className="result-details">
+                    <h4>Request Found!</h4>
+                    <p><strong>User:</strong> {verificationResult.user_name}</p>
+                    <p><strong>Email:</strong> {verificationResult.user_email}</p>
+                    <p><strong>Request Date:</strong> {new Date(verificationResult.request_date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="result-content">
+                  <XCircle className="result-icon error" />
+                  <div className="result-details">
+                    <h4>No Request Found</h4>
+                    <p>No join request found with the provided identifier for this community.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Community Details Section */}
+      <div className="form-section">
+        <div className="section-header">
+          <h3 className="section-title">Community Details</h3>
+          <Button
+            onClick={() => setIsEditing(!isEditing)}
+            variant="outline"
+            className="edit-button"
+          >
+            <Edit className="icon" />
+            {isEditing ? 'Cancel Edit' : 'Edit Details'}
+          </Button>
+        </div>
+
+        {isEditing ? (
+          <div className="edit-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label className="form-label">Community Name</label>
+                <Input
+                  value={editData.name}
+                  onChange={(e) => setEditData(prev => ({ ...prev, name: e.target.value }))}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Member Count</label>
+                <Input
+                  type="number"
+                  value={editData.member_count}
+                  onChange={(e) => setEditData(prev => ({ ...prev, member_count: e.target.value }))}
+                  className="form-input"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Description</label>
+              <textarea
+                value={editData.description}
+                onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
+                className="form-textarea"
+                rows={3}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Tags (comma-separated)</label>
+              <Input
+                value={editData.tags}
+                onChange={(e) => setEditData(prev => ({ ...prev, tags: e.target.value }))}
+                placeholder="alumni, tech, social"
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Invite Link</label>
+              <Input
+                value={editData.invite_link}
+                onChange={(e) => setEditData(prev => ({ ...prev, invite_link: e.target.value }))}
+                placeholder="https://discord.gg/..."
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Join Instructions</label>
+              <textarea
+                value={editData.identifier_format_instruction}
+                onChange={(e) => setEditData(prev => ({ ...prev, identifier_format_instruction: e.target.value }))}
+                className="form-textarea"
+                rows={3}
+                placeholder="Instructions for users on how to format their identifier..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Icon</label>
+              <Input
+                value={editData.icon}
+                onChange={(e) => setEditData(prev => ({ ...prev, icon: e.target.value }))}
+                placeholder="🌐 (emoji or leave blank for default)"
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-actions">
+              <Button
+                onClick={handleUpdate}
+                disabled={updateLoading}
+                className="save-button"
+              >
+                <Save className="icon" />
+                {updateLoading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="community-display">
+            <div className="community-card" style={{ cursor: 'default' }}>
+              <div className="card-header">
+                <div className="community-info">
+                  <span className="community-icon">
+                    {community.icon || '🌐'}
+                  </span>
+                  <h3 className="community-name">{community.name}</h3>
+                </div>
+              </div>
+              <div className="card-content">
+                <p className="community-description">
+                  {community.description}
+                </p>
+                <div className="community-meta">
+                  <span className="platform-badge">
+                    {community.platform_type}
+                  </span>
+                  <span className="member-count">
+                    <Users className="icon" />
+                    {community.member_count} members
+                  </span>
+                </div>
+                {community.tags && community.tags.length > 0 && (
+                  <div className="tags-container">
+                    {community.tags.map((tag, idx) => (
+                      <Badge key={idx} variant="outline" className="tag-badge">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                {community.invite_link && (
+                  <div className="invite-link">
+                    <strong>Invite Link:</strong> 
+                    <a href={community.invite_link} target="_blank" rel="noopener noreferrer">
+                      {community.invite_link}
+                    </a>
+                  </div>
+                )}
+                <div className="instructions-section">
+                  <strong>Join Instructions:</strong>
+                  <p>{community.identifier_format_instruction}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

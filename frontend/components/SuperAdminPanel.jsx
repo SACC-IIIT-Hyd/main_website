@@ -10,6 +10,7 @@ const SuperAdminPanel = ({ onClose }) => {
   const [communities, setCommunities] = useState([]);
   const [showCreateCommunity, setShowCreateCommunity] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [selectedCommunityForAdmins, setSelectedCommunityForAdmins] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -98,6 +99,16 @@ const SuperAdminPanel = ({ onClose }) => {
                           <h3 className="community-name">{community.name}</h3>
                         </div>
                         <div className="card-actions">
+                          <button 
+                            className="action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCommunityForAdmins(community);
+                            }}
+                            title="Manage Admins"
+                          >
+                            <Users className="icon" />
+                          </button>
                           <button className="action-btn">
                             <Edit className="icon" />
                           </button>
@@ -183,6 +194,12 @@ const SuperAdminPanel = ({ onClose }) => {
         onClose={() => setShowCreateAdmin(false)}
         onSuccess={() => setShowCreateAdmin(false)}
         communities={communities}
+      />
+
+      <CommunityAdminManagement
+        isOpen={!!selectedCommunityForAdmins}
+        community={selectedCommunityForAdmins}
+        onClose={() => setSelectedCommunityForAdmins(null)}
       />
     </>
   );
@@ -483,6 +500,123 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
                 </Button>
               </div>
             </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Community Admin Management Component
+const CommunityAdminManagement = ({ isOpen, community, onClose }) => {
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && community) {
+      fetchCommunityAdmins();
+    }
+  }, [isOpen, community]);
+
+  const fetchCommunityAdmins = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/connect/communities/${community.id}/admins`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAdmins(data);
+      }
+    } catch (error) {
+      console.error('Error fetching community admins:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveAdmin = async (adminId) => {
+    if (!confirm('Are you sure you want to remove this admin?')) return;
+
+    try {
+      const response = await fetch(`/api/connect/community-admins/${adminId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        alert('Admin removed successfully!');
+        fetchCommunityAdmins(); // Refresh the list
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message || 'Failed to remove admin'}`);
+      }
+    } catch (error) {
+      console.error('Error removing admin:', error);
+      alert('Failed to remove admin. Please try again.');
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className="drawer-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-header">
+          <h2 className="drawer-title">Manage Admins - {community?.name}</h2>
+          <p className="drawer-description">View and manage community administrators</p>
+        </div>
+
+        <div className="drawer-content">
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <span className="loading-text">Loading admins...</span>
+            </div>
+          ) : (
+            <div className="admins-list">
+              {admins.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">👥</div>
+                  <h3 className="empty-title">No Admins Found</h3>
+                  <p className="empty-subtitle">
+                    This community doesn't have any assigned admins yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="admins-grid">
+                  {admins.map((admin) => (
+                    <div key={admin.id} className="admin-card">
+                      <div className="admin-info">
+                        <h4 className="admin-name">{admin.admin_name}</h4>
+                        <p className="admin-email">{admin.admin_email}</p>
+                        <p className="admin-meta">
+                          Assigned by: {admin.assigned_by}
+                        </p>
+                        <p className="admin-date">
+                          {new Date(admin.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="admin-actions">
+                        <button
+                          onClick={() => handleRemoveAdmin(admin.id)}
+                          className="remove-btn"
+                          title="Remove Admin"
+                        >
+                          <Trash2 className="icon" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="drawer-actions">
+            <Button onClick={onClose} className="btn-cancel">
+              Close
+            </Button>
+          </div>
         </div>
       </div>
     </div>
