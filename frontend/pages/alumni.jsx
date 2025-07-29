@@ -4,6 +4,7 @@ import "@styles/yearbooks.scss";
 import Bottom from "@components/footer";
 import { getAlumniYears } from "../lib/alumni";
 import { useMediaQuery, useTheme } from "@mui/material";
+import { useEffect, useState } from "react";
 
 // Get all alumni years at build time
 export async function getStaticProps() {
@@ -21,6 +22,34 @@ export async function getStaticProps() {
 export default function Alumni({ alumniYears }) {
     const theme = useTheme();
     const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+    const [alumniData, setAlumniData] = useState([]);
+
+    useEffect(() => {
+        const data = alumniYears.map((year) => {
+            let previewImage;
+            switch (year) {
+                case "2021":
+                    previewImage = "/assets/yearbooks/2k21_preview.png";
+                    break;
+                case "2020":
+                    previewImage = "/assets/yearbooks/2k20_preview.jpg";
+                    break;
+                case "2019":
+                    previewImage = "/assets/yearbooks/2k19_preview.jpg";
+                    break;
+                case "2015":
+                    previewImage = "/assets/yearbooks/2k15_preview.jpg";
+                    break;
+                case "2014":
+                    previewImage = "/assets/yearbooks/2k14_preview.jpg";
+                    break;
+                default:
+                    previewImage = `/assets/yearbooks/${year}_preview.jpg`;
+            }
+            return { year, previewImage };
+        });
+        setAlumniData(data);
+    }, [alumniYears]);
 
     return (
         <section>
@@ -40,28 +69,31 @@ export default function Alumni({ alumniYears }) {
                     alignItems="center"
                     className="yearbooksGrid"
                 >
-                    {alumniYears.length > 0 ? (
-                        alumniYears.map((year, index) => (
+                    {alumniData.length > 0 ? (
+                        alumniData.map((alumni, index) => (
                             <Grid
                                 item
                                 key={index}
-                                xs={8}
-                                sm={4}
-                                md={3}
-                                lg={2.5}
+                                xs={18}
+                                sm={6}
+                                md={4.15}
+                                lg={4}
                                 display="flex"
                                 justifyContent="center"
                                 alignItems="center"
                                 className="yearbookContainer"
                             >
                                 <a
-                                    href={`/alumni/${year}`}
-                                    className="alumniPreview"
+                                    href={`/alumni/${alumni.year}`}
+                                    className="yearbookPreview"
+                                    style={{
+                                        backgroundImage: `url(${alumni.previewImage})`,
+                                    }}
                                 >
-                                    <Box className="alumniLabel">
-                                        <h2>{year}</h2>
+                                    <Box className="yearbookLabel">
+                                        <h4>Batch of</h4>
+                                        <h2>{alumni.year}</h2>
                                     </Box>
-                                    <div className="alumni-pattern-overlay"></div>
                                 </a>
                             </Grid>
                         ))
@@ -75,4 +107,4 @@ export default function Alumni({ alumniYears }) {
             <Bottom />
         </section>
     );
-} 
+}
