@@ -36,6 +36,14 @@ const NavbarComponent = ({ isSticky = false }) => {
     { href: '/connect', label: 'Connect' }
   ];
 
+  const protectedPages = ['/yearbooks', '/alumni', '/connect'];
+  const handleNavClick = (e, href) => {
+    if (protectedPages.includes(href) && !authenticated) {
+      e.preventDefault();
+      window.location.href = '/api/login';
+    }
+  };
+
   return (
     <nav className={`header-nav ${isSticky ? "sticky" : ""}`}>
       <div className="navbar-container">
@@ -63,6 +71,7 @@ const NavbarComponent = ({ isSticky = false }) => {
                 className="nav-link"
                 target={item.label === 'Alumni' ? '_blank' : undefined}
                 rel={item.label === 'Alumni' ? 'noopener noreferrer' : undefined}
+                onClick={e => handleNavClick(e, item.href)}
               >
                 {item.label}
               </a>
