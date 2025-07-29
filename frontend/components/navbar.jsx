@@ -31,11 +31,9 @@ const NavbarComponent = ({ isSticky = false }) => {
     { href: '/about', label: 'About' },
     { href: '/event', label: 'Events' },
     { href: '/team', label: 'Team' },
-    {
-      href: authenticated ? '/yearbooks' : '/api/login',
-      label: 'Yearbooks'
-    },
-    ...(authenticated ? [{ href: '/connect', label: 'Connect' }] : []),
+    { href: '/yearbooks', label: 'Yearbooks' },
+    { href: '/alumni', label: 'Alumni' },
+    { href: '/connect', label: 'Connect' }
   ];
 
   return (
@@ -69,32 +67,6 @@ const NavbarComponent = ({ isSticky = false }) => {
                 {item.label}
               </a>
             ))}
-            {authenticated && (
-              <a
-                href="/alumni"
-                className="nav-link"
-                style={{ order: 4 }}
-              >
-                Alumni
-              </a>
-            )}
-            {authenticated && (
-              <button
-                onClick={handleLogout}
-                className="logout-btn mobile-logout"
-                style={{ order: 5 }}
-              >
-                Logout
-              </button>
-            )}
-            {!authenticated && (
-              <a
-                href="/api/login"
-                className="login-link mobile-login"
-              >
-                Login
-              </a>
-            )}
           </div>
         </div>
 
@@ -102,14 +74,14 @@ const NavbarComponent = ({ isSticky = false }) => {
           {authenticated ? (
             <button
               onClick={handleLogout}
-              className="logout-btn desktop-logout"
+              className="logout-btn"
             >
               Logout
             </button>
           ) : (
             <a
               href="/api/login"
-              className="login-link desktop-login"
+              className="login-link"
             >
               Login
             </a>
