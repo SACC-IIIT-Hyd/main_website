@@ -24,6 +24,7 @@ const ConnectPage = () => {
   const [profileData, setProfileData] = useState({ personal_email: '', phone_number: '' });
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
   const [showCommunityAdminPanel, setShowCommunityAdminPanel] = useState(false);
+  const [showJoinCommunityPanel, setShowJoinCommunityPanel] = useState(null); // holds the community object
 
   useEffect(() => {
     fetchUserProfile();
@@ -360,11 +361,13 @@ const ConnectPage = () => {
                       )}
 
                       <div className="join-section">
-                        <JoinCommunityDrawer
-                          community={community}
-                          userProfile={userProfile}
-                          onJoinSuccess={() => fetchCommunities()}
-                        />
+                        <Button
+                          className="w-full"
+                          disabled={community.join_request_exists}
+                          onClick={() => setShowJoinCommunityPanel(community)}
+                        >
+                          {community.join_request_exists ? 'Request Pending' : 'Join Community'}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -389,15 +392,27 @@ const ConnectPage = () => {
         {showCommunityAdminPanel && (
           <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
         )}
+
+        {showJoinCommunityPanel && (
+          <JoinCommunityPanel
+            community={showJoinCommunityPanel}
+            userProfile={userProfile}
+            onClose={() => setShowJoinCommunityPanel(null)}
+            onJoinSuccess={() => {
+              setShowJoinCommunityPanel(null);
+              fetchCommunities();
+            }}
+          />
+        )}
       </div>
       <Bottom />
     </div>
   );
 };
 
-// Join Community Drawer Component
-const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
-  const [isOpen, setIsOpen] = useState(false);
+
+// Join Community Panel Component (modal style)
+const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) => {
   const [identifierType, setIdentifierType] = useState('email');
   const [customIdentifier, setCustomIdentifier] = useState('');
   const [customName, setCustomName] = useState('');
@@ -433,7 +448,6 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
 
       if (response.ok) {
         alert('Join request submitted successfully!');
-        setIsOpen(false);
         setShowConfirmation(false);
         onJoinSuccess();
       } else {
@@ -455,31 +469,21 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
     setShowConfirmation(false);
   };
 
+  useEffect(() => {
+    if (!community) resetForm();
+  }, [community]);
+
+  if (!community) return null;
+
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open);
-      if (!open) resetForm();
-    }}>
-      <DrawerTrigger asChild>
-        <Button
-          className="w-full"
-          disabled={community.join_request_exists}
-        >
-          {community.join_request_exists ? 'Request Pending' : 'Join Community'}
-        </Button>
-      </DrawerTrigger>
-
-      <DrawerContent>
-        <div className="mx-auto w-full max-w-sm">
-          <DrawerHeader>
-            <DrawerTitle>Join {community.name}</DrawerTitle>
-            <DrawerDescription>
-              Choose how you'd like to identify yourself for this community
-            </DrawerDescription>
-          </DrawerHeader>
-
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className="drawer-modal" onClick={e => e.stopPropagation()}>
+        <div className="drawer-header">
+          <h2 className="drawer-title">Join {community.name}</h2>
+          <p className="drawer-description">Choose how you'd like to identify yourself for this community</p>
+        </div>
+        <div className="drawer-content">
           <div className="p-4 pb-6 space-y-4">
-            {/* Instructions */}
             <div className="bg-blue-50 p-3 rounded-lg">
               <h4 className="font-medium text-blue-900 mb-2">Instructions:</h4>
               <p className="text-sm text-blue-800">{community.identifier_format_instruction}</p>
@@ -487,7 +491,6 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
 
             {!showConfirmation ? (
               <>
-                {/* Identifier Type Selection */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Choose Identifier</label>
                   <div className="space-y-2">
@@ -497,7 +500,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                         name="identifierType"
                         value="email"
                         checked={identifierType === 'email'}
-                        onChange={(e) => setIdentifierType(e.target.value)}
+                        onChange={e => setIdentifierType(e.target.value)}
                         className="mr-2"
                       />
                       Use my personal email (already setup)
@@ -508,7 +511,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                         name="identifierType"
                         value="phone"
                         checked={identifierType === 'phone'}
-                        onChange={(e) => setIdentifierType(e.target.value)}
+                        onChange={e => setIdentifierType(e.target.value)}
                         className="mr-2"
                       />
                       Use my phone number (already setup)
@@ -519,7 +522,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                         name="identifierType"
                         value="custom"
                         checked={identifierType === 'custom'}
-                        onChange={(e) => setIdentifierType(e.target.value)}
+                        onChange={e => setIdentifierType(e.target.value)}
                         className="mr-2"
                       />
                       Enter custom identifier
@@ -527,7 +530,6 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                   </div>
                 </div>
 
-                {/* Custom Identifier Fields */}
                 {identifierType === 'custom' && (
                   <div className="space-y-3">
                     <div>
@@ -535,7 +537,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                       <Input
                         placeholder="e.g., 'Work Email', 'Discord Username'"
                         value={customName}
-                        onChange={(e) => setCustomName(e.target.value)}
+                        onChange={e => setCustomName(e.target.value)}
                         required
                         className="custom-identifier-input"
                       />
@@ -545,7 +547,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                       <Input
                         placeholder="Enter the identifier value"
                         value={customIdentifier}
-                        onChange={(e) => setCustomIdentifier(e.target.value)}
+                        onChange={e => setCustomIdentifier(e.target.value)}
                         required
                         className="custom-identifier-input"
                       />
@@ -590,9 +592,14 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
               </div>
             )}
           </div>
+          <div className="drawer-actions">
+            <Button onClick={onClose} className="btn-cancel">
+              Cancel
+            </Button>
+          </div>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </div>
+    </div>
   );
 };
 
