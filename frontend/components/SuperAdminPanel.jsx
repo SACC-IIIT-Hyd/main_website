@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Plus, Users, Settings, Trash2, Edit, X } from 'lucide-react';
 import '@/styles/SuperAdminPanel.scss';
 
@@ -44,8 +43,9 @@ const SuperAdminPanel = ({ onClose }) => {
   ];
 
   return (
-    <div className="super-admin-panel">
-      <div className="panel-container">
+    <>
+      <div className="super-admin-panel">
+        <div className="panel-container">
         <div className="panel-header">
           <div>
             <h1 className="panel-title">Super Admin Panel</h1>
@@ -164,31 +164,34 @@ const SuperAdminPanel = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Create Community Drawer */}
-        <CreateCommunityDrawer
-          isOpen={showCreateCommunity}
-          onClose={() => setShowCreateCommunity(false)}
-          onSuccess={() => {
-            setShowCreateCommunity(false);
-            fetchCommunities();
-          }}
-          platformOptions={platformOptions}
-        />
-
-        {/* Create Admin Drawer */}
-        <CreateAdminDrawer
-          isOpen={showCreateAdmin}
-          onClose={() => setShowCreateAdmin(false)}
-          onSuccess={() => setShowCreateAdmin(false)}
-          communities={communities}
-        />
+        </div>
       </div>
-    </div>
+      
+      {/* Modals rendered outside the panel container */}
+      <CreateCommunityDrawer
+        isOpen={showCreateCommunity}
+        onClose={() => setShowCreateCommunity(false)}
+        onSuccess={() => {
+          setShowCreateCommunity(false);
+          fetchCommunities();
+        }}
+        platformOptions={platformOptions}
+      />
+
+      <CreateAdminDrawer
+        isOpen={showCreateAdmin}
+        onClose={() => setShowCreateAdmin(false)}
+        onSuccess={() => setShowCreateAdmin(false)}
+        communities={communities}
+      />
+    </>
   );
 };
 
 // Create Community Drawer Component
 const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) => {
+  console.log('CreateCommunityDrawer render - isOpen:', isOpen);
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -236,7 +239,9 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
         onSuccess();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error}`);
+        console.error('Backend validation error:', error);
+        const errorMessage = error.detail?.[0]?.msg || error.detail || error.message || 'Unknown validation error';
+        alert(`Error: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error creating community:', error);
@@ -246,18 +251,17 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
     }
   };
 
-  return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent>
-        <div className="drawer-container">
-          <DrawerHeader>
-            <DrawerTitle>Create New Community</DrawerTitle>
-            <DrawerDescription>
-              Add a new alumni community to the connect page
-            </DrawerDescription>
-          </DrawerHeader>
+  if (!isOpen) return null;
 
-          <div className="drawer-content">
+  return (
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className="drawer-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-header">
+          <h2 className="drawer-title">Create New Community</h2>
+          <p className="drawer-description">Add a new alumni community to the connect page</p>
+        </div>
+
+        <div className="drawer-content">
             <form onSubmit={handleSubmit} className="form-container">
               <div className="form-grid">
                 <div className="form-group">
@@ -365,10 +369,9 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
                 </Button>
               </div>
             </form>
-          </div>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </div>
+    </div>
   );
 };
 
@@ -419,18 +422,17 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
     }
   };
 
-  return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent>
-        <div className="drawer-container-small">
-          <DrawerHeader>
-            <DrawerTitle>Assign Community Admin</DrawerTitle>
-            <DrawerDescription>
-              Give admin access to a user for a specific community
-            </DrawerDescription>
-          </DrawerHeader>
+  if (!isOpen) return null;
 
-          <div className="drawer-content">
+  return (
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className="drawer-modal-small" onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-header">
+          <h2 className="drawer-title">Assign Community Admin</h2>
+          <p className="drawer-description">Give admin access to a user for a specific community</p>
+        </div>
+
+        <div className="drawer-content">
             <form onSubmit={handleSubmit} className="form-container">
               <div className="form-group">
                 <label className="form-label">Community *</label>
@@ -481,10 +483,9 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
                 </Button>
               </div>
             </form>
-          </div>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </div>
+    </div>
   );
 };
 

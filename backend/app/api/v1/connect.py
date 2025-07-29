@@ -13,13 +13,13 @@ Example:
     ```python
     from fastapi import APIRouter, Depends
     from app.api.v1.connect import router
-    
+
     app.include_router(router, prefix="/api/connect")
     ```
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query
 
 from app.api.dependencies import get_current_user
 from app.core.logging import get_logger
@@ -45,19 +45,22 @@ def get_connect_service() -> ConnectService:
 
 @router.get("/communities", response_model=List[CommunityResponse])
 async def get_communities(
-    search: Optional[str] = Query(None, description="Search communities by name or description"),
-    platform: Optional[str] = Query(None, description="Filter by platform type"),
+    search: Optional[str] = Query(
+        None, description="Search communities by name or description"),
+    platform: Optional[str] = Query(
+        None, description="Filter by platform type"),
     tag: Optional[str] = Query(None, description="Filter by tag"),
-    sort_by: str = Query("name", description="Sort by: name, member_count, created_at"),
+    sort_by: str = Query(
+        "name", description="Sort by: name, member_count, created_at"),
     user: UserResponse = Depends(get_current_user),
     connect_service: ConnectService = Depends(get_connect_service)
 ):
     """
     Get list of communities with optional filtering and sorting.
-    
+
     This endpoint returns all active communities that the authenticated user
     can see, with optional search, platform, and tag filters.
-    
+
     Args:
         search: Optional search term for community name or description
         platform: Optional platform type filter (discord, whatsapp, etc.)
@@ -65,7 +68,7 @@ async def get_communities(
         sort_by: Sort field (name, member_count, created_at)
         user: Current authenticated user
         connect_service: Connect service instance
-    
+
     Returns:
         List[CommunityResponse]: List of filtered and sorted communities
     """
@@ -81,7 +84,7 @@ async def get_communities(
             "component": "connect_api"
         }
     )
-    
+
     communities = await connect_service.get_communities(
         user_email=user.email,
         search=search,
@@ -89,7 +92,7 @@ async def get_communities(
         tag_filter=tag,
         sort_by=sort_by
     )
-    
+
     logger.info(
         "Communities list fetched successfully",
         extra={
@@ -99,7 +102,7 @@ async def get_communities(
             "component": "connect_api"
         }
     )
-    
+
     return communities
 
 
@@ -111,18 +114,18 @@ async def create_community(
 ):
     """
     Create a new community (super admin only).
-    
+
     This endpoint allows super admins to create new alumni communities
     with all necessary information and settings.
-    
+
     Args:
         community_data: Community creation data
         user: Current authenticated user (must be super admin)
         connect_service: Connect service instance
-    
+
     Returns:
         CommunityResponse: Created community information
-        
+
     Raises:
         HTTPException: If user is not super admin
     """
@@ -136,12 +139,12 @@ async def create_community(
             "component": "connect_api"
         }
     )
-    
+
     community = await connect_service.create_community(
         community_data=community_data,
         creator_email=user.email
     )
-    
+
     logger.info(
         "Community created successfully",
         extra={
@@ -152,7 +155,7 @@ async def create_community(
             "component": "connect_api"
         }
     )
-    
+
     return community
 
 
@@ -165,19 +168,19 @@ async def update_community(
 ):
     """
     Update community information (admin only).
-    
+
     This endpoint allows super admins and community admins to update
     community information including description, tags, member count, etc.
-    
+
     Args:
         community_id: ID of the community to update
         update_data: Updated community data
         user: Current authenticated user (must be admin)
         connect_service: Connect service instance
-    
+
     Returns:
         CommunityResponse: Updated community information
-        
+
     Raises:
         HTTPException: If user is not authorized or community not found
     """
@@ -190,13 +193,13 @@ async def update_community(
             "component": "connect_api"
         }
     )
-    
+
     community = await connect_service.update_community(
         community_id=community_id,
         update_data=update_data,
         user_email=user.email
     )
-    
+
     logger.info(
         "Community updated successfully",
         extra={
@@ -206,7 +209,7 @@ async def update_community(
             "component": "connect_api"
         }
     )
-    
+
     return community
 
 
@@ -217,14 +220,14 @@ async def get_user_profile(
 ):
     """
     Get current user's profile information.
-    
+
     This endpoint returns the user's profile including whether they have
     completed personal information setup and their custom identifiers count.
-    
+
     Args:
         user: Current authenticated user
         connect_service: Connect service instance
-    
+
     Returns:
         Optional[UserProfileResponse]: User profile if exists, None otherwise
     """
@@ -236,9 +239,9 @@ async def get_user_profile(
             "component": "connect_api"
         }
     )
-    
+
     profile = await connect_service.get_user_profile(user.uid)
-    
+
     if profile:
         logger.info(
             "User profile fetched successfully",
@@ -258,7 +261,7 @@ async def get_user_profile(
                 "component": "connect_api"
             }
         )
-    
+
     return profile
 
 
@@ -270,15 +273,15 @@ async def create_user_profile(
 ):
     """
     Create or update user profile with personal information.
-    
+
     This endpoint allows users to set up their personal email and phone
     number which will be hashed and stored for verification purposes.
-    
+
     Args:
         profile_data: Personal information (email and phone)
         user: Current authenticated user
         connect_service: Connect service instance
-    
+
     Returns:
         UserProfileResponse: Created/updated profile information
     """
@@ -290,14 +293,14 @@ async def create_user_profile(
             "component": "connect_api"
         }
     )
-    
+
     profile = await connect_service.create_user_profile(
         uid=user.uid,
         email=user.email,
-        name=user.name,
+        name=user.name or "Unknown User",
         profile_data=profile_data
     )
-    
+
     logger.info(
         "User profile created/updated successfully",
         extra={
@@ -307,7 +310,7 @@ async def create_user_profile(
             "component": "connect_api"
         }
     )
-    
+
     return profile
 
 
@@ -319,18 +322,18 @@ async def create_join_request(
 ):
     """
     Create a join request for a community.
-    
+
     This endpoint allows users to submit join requests for communities
     using their personal email, phone, or custom identifiers.
-    
+
     Args:
         request_data: Join request data including community ID and identifier
         user: Current authenticated user
         connect_service: Connect service instance
-    
+
     Returns:
         JoinRequestResponse: Created join request information
-        
+
     Raises:
         HTTPException: If profile not set up or request already exists
     """
@@ -344,13 +347,13 @@ async def create_join_request(
             "component": "connect_api"
         }
     )
-    
+
     join_request = await connect_service.create_join_request(
         request_data=request_data,
         user_uid=user.uid,
         user_email=user.email
     )
-    
+
     logger.info(
         "Join request created successfully",
         extra={
@@ -361,7 +364,7 @@ async def create_join_request(
             "component": "connect_api"
         }
     )
-    
+
     return join_request
 
 
@@ -373,20 +376,22 @@ async def verify_identifier(
     connect_service: ConnectService = Depends(get_connect_service)
 ) -> IdentifierVerificationResponse:
     """
-    Verify if a user has submitted a join request with given identifier (admin only).
-    
+    Verify if a user has submitted a join request with given identifier
+    (admin only).
+
     This endpoint allows community admins to check if someone has submitted
     a join request with a specific identifier for their community.
-    
+
     Args:
         community_id: Community ID to check
         verification_data: Identifier to verify
         user: Current authenticated user (must be admin)
         connect_service: Connect service instance
-    
+
     Returns:
-        IdentifierVerificationResponse: Verification result with user info if found
-        
+        IdentifierVerificationResponse: Verification result
+        with user info if found
+
     Raises:
         HTTPException: If user is not authorized for this community
     """
@@ -399,13 +404,13 @@ async def verify_identifier(
             "component": "connect_api"
         }
     )
-    
+
     result = await connect_service.verify_identifier(
         community_id=community_id,
         identifier=verification_data.identifier,
         admin_email=user.email
     )
-    
+
     logger.info(
         "Identifier verification completed",
         extra={
@@ -416,7 +421,7 @@ async def verify_identifier(
             "component": "connect_api"
         }
     )
-    
+
     return result
 
 
@@ -428,18 +433,18 @@ async def create_community_admin(
 ):
     """
     Create a community admin (super admin only).
-    
+
     This endpoint allows super admins to assign community admin roles
     to other users for specific communities.
-    
+
     Args:
         admin_data: Admin assignment data
         user: Current authenticated user (must be super admin)
         connect_service: Connect service instance
-    
+
     Returns:
         CommunityAdmin: Created admin assignment
-        
+
     Raises:
         HTTPException: If user is not super admin
     """
@@ -453,12 +458,12 @@ async def create_community_admin(
             "component": "connect_api"
         }
     )
-    
+
     admin = await connect_service.create_community_admin(
         admin_data=admin_data,
         assigner_email=user.email
     )
-    
+
     logger.info(
         "Community admin created successfully",
         extra={
@@ -470,7 +475,7 @@ async def create_community_admin(
             "component": "connect_api"
         }
     )
-    
+
     return admin
 
 
@@ -481,14 +486,14 @@ async def get_admin_communities(
 ):
     """
     Get communities that current user is admin for.
-    
+
     This endpoint returns all communities where the current user has
     admin privileges (either super admin or community admin).
-    
+
     Args:
         user: Current authenticated user
         connect_service: Connect service instance
-    
+
     Returns:
         List[CommunityResponse]: Communities user can admin
     """
@@ -500,9 +505,9 @@ async def get_admin_communities(
             "component": "connect_api"
         }
     )
-    
+
     communities = await connect_service.get_user_admin_communities(user.email)
-    
+
     logger.info(
         "Admin communities fetched successfully",
         extra={
@@ -512,7 +517,7 @@ async def get_admin_communities(
             "component": "connect_api"
         }
     )
-    
+
     return communities
 
 
@@ -523,14 +528,14 @@ async def get_user_roles(
 ):
     """
     Get current user's roles and permissions.
-    
+
     This endpoint returns information about the user's admin roles,
     including whether they are super admin or community admin.
-    
+
     Args:
         user: Current authenticated user
         connect_service: Connect service instance
-    
+
     Returns:
         Dict: User role information
     """
@@ -542,9 +547,9 @@ async def get_user_roles(
             "component": "connect_api"
         }
     )
-    
+
     roles = connect_service.get_user_roles(user.email)
-    
+
     logger.info(
         "User roles fetched successfully",
         extra={
@@ -555,7 +560,7 @@ async def get_user_roles(
             "component": "connect_api"
         }
     )
-    
+
     return roles
 
 
@@ -564,7 +569,7 @@ async def get_user_roles(
 async def health_check():
     """
     Health check endpoint for Connect service.
-    
+
     Returns:
         Dict: Health status
     """
