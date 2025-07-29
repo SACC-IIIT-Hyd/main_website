@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import NavbarComponent from '@/components/navbar';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
 import CommunityAdminPanel from '@/components/CommunityAdminPanel';
+import Bottom from '@/components/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -128,11 +129,11 @@ const ConnectPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="connect-page">
         <NavbarComponent isSticky={true} />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg">Loading...</div>
+        <div className="main-content">
+          <div className="loading-container">
+            <div className="loading-spinner">Loading...</div>
           </div>
         </div>
       </div>
@@ -141,49 +142,51 @@ const ConnectPage = () => {
 
   if (showProfileSetup && !userProfile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="connect-page">
         <NavbarComponent isSticky={true} />
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center">Welcome to Connect!</CardTitle>
-              <CardDescription className="text-center">
-                Discover and join IIITH alumni communities across Discord, WhatsApp, Teams, Slack, and more. 
+        <div className="">
+          <Card className="setup-card">
+            <CardHeader className="setup-header">
+              <CardTitle>Welcome to Connect!</CardTitle>
+              <CardDescription>
+                Discover and join IIITH alumni communities across Discord, WhatsApp, Teams, Slack, and more.
                 To get started, please provide your personal contact information for verification purposes.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleProfileSetup} className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Privacy Notice:</strong> Your personal email and phone number will be hashed and stored securely. 
+              <form onSubmit={handleProfileSetup} className="setup-form">
+                <div className="privacy-notice">
+                  <p>
+                    <strong>Privacy Notice:</strong> Your personal email and phone number will be hashed and stored securely.
                     Even we cannot retrieve your original information. This is only used to verify the authenticity of community join requests.
                   </p>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Personal Email Address</label>
+
+                <div className="form-group">
+                  <label className="form-label">Personal Email Address</label>
                   <Input
                     type="email"
                     value={profileData.personal_email}
                     onChange={(e) => setProfileData(prev => ({ ...prev, personal_email: e.target.value }))}
                     placeholder="your.personal@email.com"
                     required
+                    className="form-input"
                   />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Phone Number</label>
+
+                <div className="form-group">
+                  <label className="form-label">Phone Number</label>
                   <Input
                     type="tel"
                     value={profileData.phone_number}
                     onChange={(e) => setProfileData(prev => ({ ...prev, phone_number: e.target.value }))}
                     placeholder="+91 98765 43210"
                     required
+                    className="form-input"
                   />
                 </div>
-                
-                <Button type="submit" className="w-full">
+
+                <Button type="submit" className="setup-button">
                   Complete Setup
                 </Button>
               </form>
@@ -195,35 +198,35 @@ const ConnectPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="connect-page">
       <NavbarComponent isSticky={true} />
-      
-      <div className="container mx-auto px-4 py-8">
+
+      <div className="main-content">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Alumni Communities</h1>
-            <p className="text-gray-600 mt-2">Connect with fellow IIITH alumni across various platforms</p>
+        <div className="header-container">
+          <div className="header-title">
+            <h1 className="title">Alumni Communities</h1>
+            <p className="subtitle">Connect with fellow IIITH alumni across various platforms</p>
           </div>
-          
+
           {/* Admin Controls */}
-          <div className="flex gap-2">
+          <div className="admin-controls">
             {userRoles.is_community_admin && (
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2"
+              <Button
+                variant="outline"
+                className="admin-button"
                 onClick={() => setShowCommunityAdminPanel(true)}
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="icon" />
                 Admin Panel
               </Button>
             )}
             {userRoles.is_super_admin && (
-              <Button 
-                className="flex items-center gap-2"
+              <Button
+                className="admin-button"
                 onClick={() => setShowSuperAdminPanel(true)}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="icon" />
                 Super Admin
               </Button>
             )}
@@ -231,21 +234,21 @@ const ConnectPage = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <div className="search-filter-container">
+          <div className="search-bar">
+            <Search className="search-icon" />
             <Input
               placeholder="Search communities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="search-input"
             />
           </div>
-          
+
           <select
             value={platformFilter}
             onChange={(e) => setPlatformFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="platform-filter"
           >
             <option value="">All Platforms</option>
             <option value="discord">Discord</option>
@@ -256,55 +259,55 @@ const ConnectPage = () => {
             <option value="linkedin">LinkedIn</option>
             <option value="other">Other</option>
           </select>
-          
+
           <Input
             placeholder="Filter by tag..."
             value={tagFilter}
             onChange={(e) => setTagFilter(e.target.value)}
-            className="w-full md:w-48"
+            className="tag-filter"
           />
-          
-          <Button onClick={fetchCommunities} variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
+
+          <Button onClick={fetchCommunities} variant="outline" className="apply-filters-button">
+            <Filter className="icon" />
             Apply Filters
           </Button>
         </div>
 
         {/* Communities List */}
-        <div className="space-y-4">
-          <Accordion type="single" collapsible className="w-full">
+        <div className="communities-list">
+          <Accordion type="single" collapsible className="accordion">
             {communities.map((community) => (
               <AccordionItem key={community.id} value={community.id.toString()}>
-                <AccordionTrigger className="hover:no-underline">
-                  <Card className="w-full shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-2xl">
+                <AccordionTrigger className="accordion-trigger">
+                  <Card className="community-card">
+                    <CardContent className="community-card-content">
+                      <div className="community-card-inner">
+                        <div className="community-info">
+                          <div className="platform-icon">
                             {community.icon || getPlatformIcon(community.platform_type)}
                           </div>
-                          <div className="flex-1 text-left">
-                            <h3 className="font-semibold text-lg">{community.name}</h3>
-                            <p className="text-gray-600 text-sm">
+                          <div className="community-details">
+                            <h3 className="community-name">{community.name}</h3>
+                            <p className="community-description">
                               {truncateText(community.description, 100)}
                             </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="secondary">{community.platform_type}</Badge>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Users className="h-4 w-4 mr-1" />
+                            <div className="community-meta">
+                              <Badge variant="secondary" className="platform-badge">{community.platform_type}</Badge>
+                              <div className="member-count">
+                                <Users className="icon" />
                                 {community.member_count} members
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
+                        <div className="tags-container">
                           {community.tags.slice(0, 3).map((tag, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
+                            <Badge key={idx} variant="outline" className="tag-badge">
                               {tag}
                             </Badge>
                           ))}
                           {community.tags.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="tag-badge">
                               +{community.tags.length - 3} more
                             </Badge>
                           )}
@@ -313,52 +316,54 @@ const ConnectPage = () => {
                     </CardContent>
                   </Card>
                 </AccordionTrigger>
-                
+
                 <AccordionContent>
-                  <Card className="mt-2 ml-4">
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-medium text-gray-900">Full Description</h4>
-                          <p className="text-gray-700 mt-1">{community.description}</p>
+                  <Card className="community-details-card">
+                    <CardContent className="community-details-content">
+                      <div className="details-section">
+                        <div className="section-header">
+                          <h4 className="section-title">Full Description</h4>
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h4 className="font-medium text-gray-900">Platform</h4>
-                            <div className="flex items-center mt-1">
-                              <span className="text-lg mr-2">{getPlatformIcon(community.platform_type)}</span>
-                              <span className="capitalize">{community.platform_type}</span>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="font-medium text-gray-900">Members</h4>
-                            <div className="flex items-center mt-1">
-                              <Users className="h-4 w-4 mr-2 text-gray-500" />
-                              <span>{community.member_count} members</span>
-                            </div>
+                        <div className="section-content">
+                          <p className="description-text">{community.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="platform-members-grid">
+                        <div className="detail-item">
+                          <h4>Platform</h4>
+                          <div className="detail-content">
+                            <span className="icon">{getPlatformIcon(community.platform_type)}</span>
+                            <span className="platform-text">{community.platform_type}</span>
                           </div>
                         </div>
-                        
-                        {community.tags.length > 0 && (
-                          <div>
-                            <h4 className="font-medium text-gray-900">Tags</h4>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {community.tags.map((tag, idx) => (
-                                <Badge key={idx} variant="outline">{tag}</Badge>
-                              ))}
-                            </div>
+
+                        <div className="detail-item">
+                          <h4>Members</h4>
+                          <div className="detail-content">
+                            <Users className="icon" />
+                            <span>{community.member_count} members</span>
                           </div>
-                        )}
-                        
-                        <div className="pt-4 border-t">
-                          <JoinCommunityDrawer 
-                            community={community}
-                            userProfile={userProfile}
-                            onJoinSuccess={() => fetchCommunities()}
-                          />
                         </div>
+                      </div>
+
+                      {community.tags.length > 0 && (
+                        <div className="tags-section">
+                          <h4>Tags</h4>
+                          <div className="tags-grid">
+                            {community.tags.map((tag, idx) => (
+                              <Badge key={idx} variant="outline" className="tag-badge">{tag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="join-section">
+                        <JoinCommunityDrawer
+                          community={community}
+                          userProfile={userProfile}
+                          onJoinSuccess={() => fetchCommunities()}
+                        />
                       </div>
                     </CardContent>
                   </Card>
@@ -366,11 +371,11 @@ const ConnectPage = () => {
               </AccordionItem>
             ))}
           </Accordion>
-          
+
           {communities.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-gray-500 text-lg">No communities found</div>
-              <p className="text-gray-400 mt-2">Try adjusting your search or filters</p>
+            <div className="no-communities">
+              <div className="no-communities-text">No communities found</div>
+              <p className="no-communities-subtext">Try adjusting your search or filters</p>
             </div>
           )}
         </div>
@@ -379,11 +384,12 @@ const ConnectPage = () => {
         {showSuperAdminPanel && (
           <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
         )}
-        
+
         {showCommunityAdminPanel && (
           <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
         )}
       </div>
+      <Bottom />
     </div>
   );
 };
@@ -454,14 +460,14 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
       if (!open) resetForm();
     }}>
       <DrawerTrigger asChild>
-        <Button 
-          className="w-full" 
+        <Button
+          className="w-full"
           disabled={community.join_request_exists}
         >
           {community.join_request_exists ? 'Request Pending' : 'Join Community'}
         </Button>
       </DrawerTrigger>
-      
+
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
@@ -470,14 +476,14 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
               Choose how you'd like to identify yourself for this community
             </DrawerDescription>
           </DrawerHeader>
-          
+
           <div className="p-4 pb-6 space-y-4">
             {/* Instructions */}
             <div className="bg-blue-50 p-3 rounded-lg">
               <h4 className="font-medium text-blue-900 mb-2">Instructions:</h4>
               <p className="text-sm text-blue-800">{community.identifier_format_instruction}</p>
             </div>
-            
+
             {!showConfirmation ? (
               <>
                 {/* Identifier Type Selection */}
@@ -519,7 +525,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                     </label>
                   </div>
                 </div>
-                
+
                 {/* Custom Identifier Fields */}
                 {identifierType === 'custom' && (
                   <div className="space-y-3">
@@ -530,6 +536,7 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                         value={customName}
                         onChange={(e) => setCustomName(e.target.value)}
                         required
+                        className="custom-identifier-input"
                       />
                     </div>
                     <div>
@@ -539,13 +546,14 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                         value={customIdentifier}
                         onChange={(e) => setCustomIdentifier(e.target.value)}
                         required
+                        className="custom-identifier-input"
                       />
                     </div>
                   </div>
                 )}
-                
-                <Button 
-                  onClick={handleJoinRequest} 
+
+                <Button
+                  onClick={handleJoinRequest}
                   className="w-full"
                   disabled={identifierType === 'custom' && (!customIdentifier || !customName)}
                 >
@@ -557,20 +565,20 @@ const JoinCommunityDrawer = ({ community, userProfile, onJoinSuccess }) => {
                 <div className="bg-yellow-50 p-3 rounded-lg">
                   <h4 className="font-medium text-yellow-900 mb-2">Confirm Your Request</h4>
                   <p className="text-sm text-yellow-800">
-                    Please confirm that you have entered your identifier in the exact format required by this community. 
+                    Please confirm that you have entered your identifier in the exact format required by this community.
                     This cannot be changed after submission.
                   </p>
                 </div>
-                
+
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setShowConfirmation(false)}
                     className="flex-1"
                   >
                     Go Back
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleJoinRequest}
                     disabled={loading}
                     className="flex-1"
