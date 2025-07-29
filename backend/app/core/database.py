@@ -22,8 +22,8 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import (
-    AsyncSession, 
-    async_sessionmaker, 
+    AsyncSession,
+    async_sessionmaker,
     create_async_engine,
     AsyncEngine
 )
@@ -47,10 +47,10 @@ _sessionmaker: Optional[async_sessionmaker[AsyncSession]] = None
 def get_database_url() -> str:
     """
     Get the database URL for connection.
-    
+
     Returns:
         str: Database connection URL
-        
+
     Raises:
         ValueError: If DATABASE_URL is not configured
     """
@@ -59,27 +59,29 @@ def get_database_url() -> str:
         if hasattr(settings, 'postgres_host'):
             return f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
         else:
-            raise ValueError("DATABASE_URL not configured and individual database settings not available")
-    
+            raise ValueError(
+                "DATABASE_URL not configured and individual database settings not available")
+
     # Convert postgresql:// to postgresql+asyncpg:// for async support
     db_url = settings.database_url
     if db_url.startswith("postgresql://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    
+
     return db_url
 
 
 def create_engine() -> AsyncEngine:
     """
     Create SQLAlchemy async engine.
-    
+
     Returns:
         AsyncEngine: Configured async database engine
     """
     database_url = get_database_url()
-    
-    logger.info("Creating database engine", extra={"database_url": database_url.split('@')[0] + "@***"})
-    
+
+    logger.info("Creating database engine", extra={
+                "database_url": database_url.split('@')[0] + "@***"})
+
     engine = create_async_engine(
         database_url,
         echo=settings.debug,  # Log SQL queries in debug mode
@@ -87,14 +89,14 @@ def create_engine() -> AsyncEngine:
         pool_pre_ping=True,  # Validate connections before use
         pool_recycle=3600,   # Recycle connections after 1 hour
     )
-    
+
     return engine
 
 
 def get_engine() -> AsyncEngine:
     """
     Get or create the global database engine.
-    
+
     Returns:
         AsyncEngine: Database engine instance
     """
@@ -107,7 +109,7 @@ def get_engine() -> AsyncEngine:
 def get_sessionmaker() -> async_sessionmaker[AsyncSession]:
     """
     Get or create the global session maker.
-    
+
     Returns:
         async_sessionmaker[AsyncSession]: Session maker for creating database sessions
     """
@@ -128,13 +130,13 @@ def get_sessionmaker() -> async_sessionmaker[AsyncSession]:
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Get async database session context manager.
-    
+
     This function provides a database session that automatically handles
     commits, rollbacks, and cleanup.
-    
+
     Yields:
         AsyncSession: Database session
-        
+
     Example:
         ```python
         async with get_db_session() as session:
@@ -144,13 +146,14 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
         ```
     """
     sessionmaker = get_sessionmaker()
-    
+
     async with sessionmaker() as session:
         try:
             logger.debug("Database session created")
             yield session
         except Exception as e:
-            logger.error("Database session error, rolling back", extra={"error": str(e)})
+            logger.error("Database session error, rolling back",
+                         extra={"error": str(e)})
             await session.rollback()
             raise
         finally:
@@ -160,24 +163,24 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
 async def init_database() -> None:
     """
     Initialize database by creating all tables.
-    
+
     This function should be called during application startup
     to ensure all database tables exist.
     """
     logger.info("Initializing database tables")
-    
+
     engine = get_engine()
-    
+
     try:
         async with engine.begin() as conn:
             # Import all models to ensure they're registered with Base
             from app.models import auth, connect  # noqa: F401
-            
+
             # Create all tables
             await conn.run_sync(Base.metadata.create_all)
-            
+
         logger.info("Database tables initialized successfully")
-        
+
     except Exception as e:
         logger.error("Failed to initialize database", extra={"error": str(e)})
         raise
@@ -186,7 +189,7 @@ async def init_database() -> None:
 async def check_database_connection() -> bool:
     """
     Check if database connection is working.
-    
+
     Returns:
         bool: True if connection is successful, False otherwise
     """
@@ -195,23 +198,24 @@ async def check_database_connection() -> bool:
             # Execute a simple query to test connection
             result = await session.execute("SELECT 1")
             result.fetchone()
-            
+
         logger.info("Database connection check successful")
         return True
-        
+
     except Exception as e:
-        logger.error("Database connection check failed", extra={"error": str(e)})
+        logger.error("Database connection check failed",
+                     extra={"error": str(e)})
         return False
 
 
 async def close_database() -> None:
     """
     Close database connections and cleanup resources.
-    
+
     This function should be called during application shutdown.
     """
     global _engine, _sessionmaker
-    
+
     if _engine:
         logger.info("Closing database connections")
         await _engine.dispose()
@@ -224,10 +228,10 @@ async def close_database() -> None:
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     FastAPI dependency to get database session.
-    
+
     Yields:
         AsyncSession: Database session for request handling
-        
+
     Example:
         ```python
         @app.get("/users/{user_id}")
