@@ -53,16 +53,36 @@ async def lifespan(_: FastAPI):
     logger.info(
         "Version: %s, Debug: %s", settings.project_version, settings.debug)
 
-    # Initialize any startup resources here
-    # (database connections, external services, etc.)
+    # Initialize database
+    try:
+        from app.core.database import init_database, check_database_connection
+        
+        logger.info("Initializing database connection...")
+        await init_database()
+        
+        # Check database connectivity
+        db_connected = await check_database_connection()
+        if db_connected:
+            logger.info("Database connection successful")
+        else:
+            logger.error("Database connection failed")
+            
+    except Exception as e:
+        logger.error("Failed to initialize database: %s", str(e))
+        # Don't prevent startup, but log the error
 
     yield
 
     # Shutdown
     logger.info("Shutting down SACC Website Backend")
 
-    # Cleanup resources here
-    # (close database connections, cleanup temporary files, etc.)
+    # Cleanup database connections
+    try:
+        from app.core.database import close_database
+        await close_database()
+        logger.info("Database connections closed")
+    except Exception as e:
+        logger.error("Error closing database connections: %s", str(e))
 
 
 # Create FastAPI application instance

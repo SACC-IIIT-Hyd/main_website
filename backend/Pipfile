@@ -10,6 +10,9 @@ uvicorn = "*"
 pyjwt = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
 python-cas = "*"
+sqlalchemy = "*"
+asyncpg = "*"
+structlog = "*"
 
 [dev-packages]
 

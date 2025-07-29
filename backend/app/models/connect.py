@@ -1,7 +1,7 @@
 """
 Database models for the Connect page functionality.
 
-This module defines the database schema for alumni community management,
+This module defines both SQLAlchemy ORM models and Pydantic models for alumni community management,
 including communities, community admins, user profiles, and join requests.
 
 @module: app.models.connect
@@ -21,6 +21,11 @@ from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field, validator
 from enum import Enum
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from app.core.database import Base
 
 
 class CommunityType(str, Enum):
@@ -33,6 +38,87 @@ class CommunityType(str, Enum):
     LINKEDIN = "linkedin"
     OTHER = "other"
 
+
+# SQLAlchemy ORM Models
+
+class UserProfileORM(Base):
+    """SQLAlchemy ORM model for user profiles."""
+    __tablename__ = "user_profiles"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    uid = Column(String(100), unique=True, nullable=False, index=True)
+    email = Column(String(100), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    
+    personal_email_hash = Column(String(255), nullable=True)
+    phone_hash = Column(String(255), nullable=True)
+    custom_identifiers = Column(JSON, default=list, nullable=False)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # Relationships
+    join_requests = relationship("JoinRequestORM", back_populates="user_profile")
+
+
+class CommunityORM(Base):
+    """SQLAlchemy ORM model for communities."""
+    __tablename__ = "communities"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(100), nullable=False, index=True)
+    description = Column(String(500), nullable=False)
+    icon = Column(String(255), nullable=True)
+    platform_type = Column(String(50), nullable=False, index=True)
+    tags = Column(JSON, default=list, nullable=False)
+    member_count = Column(Integer, default=0, nullable=False)
+    invite_link = Column(String(500), nullable=True)
+    identifier_format_instruction = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False, index=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # Relationships
+    admins = relationship("CommunityAdminORM", back_populates="community")
+    join_requests = relationship("JoinRequestORM", back_populates="community")
+
+
+class CommunityAdminORM(Base):
+    """SQLAlchemy ORM model for community admins."""
+    __tablename__ = "community_admins"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    community_id = Column(Integer, ForeignKey("communities.id"), nullable=False, index=True)
+    admin_email = Column(String(100), nullable=False, index=True)
+    admin_name = Column(String(200), nullable=False)
+    assigned_by = Column(String(100), nullable=False)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    # Relationships
+    community = relationship("CommunityORM", back_populates="admins")
+
+
+class JoinRequestORM(Base):
+    """SQLAlchemy ORM model for join requests."""
+    __tablename__ = "join_requests"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    community_id = Column(Integer, ForeignKey("communities.id"), nullable=False, index=True)
+    user_uid = Column(String(100), ForeignKey("user_profiles.uid"), nullable=False, index=True)
+    user_email = Column(String(100), nullable=False, index=True)
+    identifier_hash = Column(String(255), nullable=False, index=True)
+    status = Column(String(50), default="pending", nullable=False, index=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    # Relationships
+    community = relationship("CommunityORM", back_populates="join_requests")
+    user_profile = relationship("UserProfileORM", back_populates="join_requests")
+
+
+# Pydantic Models
 
 class UserProfile(BaseModel):
     """

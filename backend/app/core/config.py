@@ -97,6 +97,32 @@ class Settings(BaseSettings):
         default=None,
         description="Database connection URL (PostgreSQL format)"
     )
+    
+    # Individual database components (fallback if DATABASE_URL not set)
+    postgres_host: str = Field(
+        default="postgres",
+        description="PostgreSQL host"
+    )
+    
+    postgres_port: str = Field(
+        default="5432",
+        description="PostgreSQL port"
+    )
+    
+    postgres_db: str = Field(
+        default="sacc_db",
+        description="PostgreSQL database name"
+    )
+    
+    postgres_user: str = Field(
+        default="sacc_user",
+        description="PostgreSQL username"
+    )
+    
+    postgres_password: str = Field(
+        default="sacc_password",
+        description="PostgreSQL password"
+    )
 
     # CORS settings
     cors_origins: list[str] = Field(
