@@ -371,7 +371,7 @@ const ConnectPage = () => {
 
                       <div className="join-section">
                         <Button
-                          className="w-full"
+                          className="w-full join-community-btn"
                           disabled={community.join_request_exists}
                           onClick={() => setShowJoinCommunityPanel(community)}
                         >
@@ -577,14 +577,14 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
                   <Button
                     variant="outline"
                     onClick={() => setShowConfirmation(false)}
-                    className="flex-1"
+                    className="flex-1 confirm-dialog-button"
                   >
                     Go Back
                   </Button>
                   <Button
                     onClick={handleJoinRequest}
                     disabled={loading}
-                    className="flex-1"
+                    className="flex-1 confirm-dialog-button"
                   >
                     {loading ? 'Submitting...' : 'Confirm & Submit'}
                   </Button>
