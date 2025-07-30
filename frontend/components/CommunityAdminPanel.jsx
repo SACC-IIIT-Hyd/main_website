@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, X, Search, CheckCircle, XCircle, Edit, Save, Upload } from 'lucide-react';
+import { Users, X, Search, CheckCircle, XCircle, Edit, Save, Upload, Globe } from 'lucide-react';
 import '@/styles/CommunityAdminPanel.scss';
 
 const CommunityAdminPanel = ({ onClose }) => {
@@ -108,7 +108,7 @@ const CommunityAdminPanel = ({ onClose }) => {
                     <div className="card-header">
                       <div className="community-info">
                         <span className="community-icon">
-                          {community.icon || '🌐'}
+                          {community.icon || <Globe size={24} />}
                         </span>
                         <h3 className="community-name">{community.name}</h3>
                       </div>
@@ -142,7 +142,7 @@ const CommunityAdminPanel = ({ onClose }) => {
 
               {adminCommunities.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-icon">🏛️</div>
+                  <div className="empty-icon"><Building2 size={48} /></div>
                   <h3 className="empty-title">No Communities Assigned</h3>
                   <p className="empty-subtitle">
                     Contact a super admin to get community admin access for specific communities.

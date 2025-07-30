@@ -210,29 +210,38 @@ const ConnectPage = () => {
             <p className="subtitle">Connect with fellow IIITH alumni across various platforms</p>
           </div>
 
-          {/* Floating Admin Buttons */}
-          <div className="floating-admin-buttons">
+          {/* Admin Buttons */}
+          <div className="admin-buttons-container">
             {userRoles.is_community_admin && (
-              <button
-                className="floating-admin-btn community-admin-btn"
+              <Button
+                className="admin-btn community-admin-btn"
                 onClick={() => setShowCommunityAdminPanel(true)}
                 title="Community Admin Panel"
               >
                 <Settings className="icon" />
                 <span className="btn-text">Community Admin</span>
-              </button>
+              </Button>
             )}
             {userRoles.is_super_admin && (
-              <button
-                className="floating-admin-btn super-admin-btn"
+              <Button
+                className="admin-btn super-admin-btn"
                 onClick={() => setShowSuperAdminPanel(true)}
                 title="Super Admin Panel"
               >
                 <Plus className="icon" />
                 <span className="btn-text">Super Admin</span>
-              </button>
+              </Button>
             )}
           </div>
+
+          {/* Admin Panels */}
+          {showSuperAdminPanel && (
+            <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
+          )}
+
+          {showCommunityAdminPanel && (
+            <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
+          )}
         </div>
 
         {/* Search and Filters */}
@@ -383,15 +392,6 @@ const ConnectPage = () => {
             </div>
           )}
         </div>
-
-        {/* Admin Panels */}
-        {showSuperAdminPanel && (
-          <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
-        )}
-
-        {showCommunityAdminPanel && (
-          <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
-        )}
 
         {showJoinCommunityPanel && (
           <JoinCommunityPanel

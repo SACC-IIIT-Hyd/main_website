@@ -776,11 +776,7 @@
 /* Base Panel Styles */
 .community-admin-panel, 
 .super-admin-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  /* Removed fixed positioning to make it static */
   background: rgba(31, 18, 26, 0.95);
   backdrop-filter: blur(15px);
   z-index: 1000;
@@ -790,6 +786,7 @@
   padding: 2rem;
   overflow-y: auto;
   animation: fadeIn 0.3s ease;
+  margin: 0 auto; /* Center the panels horizontally */
 
   /* Panel Container */
   .panel-container {
@@ -1537,123 +1534,68 @@
   }
 }
 
-/* Floating Admin Buttons */
-.floating-admin-buttons {
-  position: fixed;
-  top: 50%;
-  right: 2rem;
-  transform: translateY(-50%);
+/* Admin Buttons Container */
+.admin-buttons-container {
   display: flex;
-  flex-direction: column;
   gap: 1rem;
-  z-index: 100;
+  align-items: center;
+  margin-top: clamp(50px, 12vw, 100px);
+}
 
-  .floating-admin-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    border: 2px solid;
-    border-radius: 50px;
-    background: rgba(31, 18, 26, 0.95);
-    color: #EFDFC2;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    text-decoration: none;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    min-width: 60px;
-    overflow: hidden;
+.admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 2px solid var(--card-border);
+  background: rgba(143, 90, 51, 0.1);
+  color: #EFDFC2;
+  backdrop-filter: blur(10px);
 
-    .icon {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-      transition: transform 0.3s ease;
-    }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--hover-shadow);
+    border-color: #F87272;
+    background: rgba(143, 90, 51, 0.2);
+  }
 
-    .btn-text {
-      opacity: 0;
-      transform: translateX(-10px);
-      transition: all 0.3s ease;
-      white-space: nowrap;
-      font-family: 'Montserrat', sans-serif;
-    }
+  .icon {
+    width: 18px;
+    height: 18px;
+  }
 
+  &.community-admin-btn {
+    border-color: #F87272;
     &:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-      min-width: 200px;
-
-      .btn-text {
-        opacity: 1;
-        transform: translateX(0);
-      }
-
-      .icon {
-        transform: rotate(360deg);
-      }
-    }
-
-    &.community-admin-btn {
+      background: rgba(248, 114, 114, 0.15);
       border-color: #F87272;
-      
-      &:hover {
-        background: rgba(248, 114, 114, 0.15);
-        border-color: #F87272;
-        color: #F87272;
-      }
+      color: #F87272;
     }
+  }
 
-    &.super-admin-btn {
+  &.super-admin-btn {
+    border-color: #dc2626;
+    &:hover {
+      background: rgba(220, 38, 38, 0.15);
       border-color: #dc2626;
-      
-      &:hover {
-        background: rgba(220, 38, 38, 0.15);
-        border-color: #dc2626;
-        color: #dc2626;
-      }
+      color: #dc2626;
     }
   }
+}
 
-  @media (max-width: 1024px) {
-    right: 1rem;
-    
-    .floating-admin-btn {
-      padding: 0.6rem 1rem;
-      font-size: 0.85rem;
-      
-      .icon {
-        width: 18px;
-        height: 18px;
-      }
-    }
-  }
-
-  @media (max-width: 768px) {
-    position: fixed;
-    top: auto;
-    bottom: 2rem;
-    right: 1rem;
-    transform: none;
-    flex-direction: row;
+/* Responsive adjustments for admin buttons */
+@media (max-width: 768px) {
+  .admin-buttons-container {
+    flex-direction: column;
     gap: 0.75rem;
 
-    .floating-admin-btn {
-      padding: 0.75rem;
-      min-width: 50px;
-      border-radius: 50%;
-      
-      .btn-text {
-        display: none;
-      }
-      
-      &:hover {
-        min-width: 50px;
-        border-radius: 50%;
-      }
+    .admin-btn {
+      width: 100%;
+      max-width: 250px;
+      justify-content: center;
     }
   }
 }

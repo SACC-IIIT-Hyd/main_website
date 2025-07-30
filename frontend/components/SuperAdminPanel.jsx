@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Users, Settings, Trash2, Edit, X } from 'lucide-react';
+import { Plus, Users, Settings, Trash2, Edit, X, MessageSquare, Phone, Briefcase, Send, Linkedin, Globe } from 'lucide-react';
 import '@/styles/SuperAdminPanel.scss';
 
 const SuperAdminPanel = ({ onClose }) => {
@@ -34,13 +34,13 @@ const SuperAdminPanel = ({ onClose }) => {
   };
 
   const platformOptions = [
-    { value: 'discord', label: 'Discord', icon: '💬' },
-    { value: 'whatsapp', label: 'WhatsApp', icon: '💚' },
-    { value: 'teams', label: 'Microsoft Teams', icon: '🟦' },
-    { value: 'slack', label: 'Slack', icon: '💼' },
-    { value: 'telegram', label: 'Telegram', icon: '✈️' },
-    { value: 'linkedin', label: 'LinkedIn', icon: '💼' },
-    { value: 'other', label: 'Other', icon: '🌐' }
+    { value: 'discord', label: 'Discord', icon: <MessageSquare size={20} /> },
+    { value: 'whatsapp', label: 'WhatsApp', icon: <Phone size={20} /> },
+    { value: 'teams', label: 'Microsoft Teams', icon: <Briefcase size={20} /> },
+    { value: 'slack', label: 'Slack', icon: <Briefcase size={20} /> },
+    { value: 'telegram', label: 'Telegram', icon: <Send size={20} /> },
+    { value: 'linkedin', label: 'LinkedIn', icon: <Linkedin size={20} /> },
+    { value: 'other', label: 'Other', icon: <Globe size={20} /> }
   ];
 
   return (
@@ -165,7 +165,7 @@ const SuperAdminPanel = ({ onClose }) => {
 
             {communities.length === 0 && !loading && (
               <div className="empty-state">
-                <div className="empty-icon">🏛️</div>
+                <div className="empty-icon"><Users size={48} /></div>
                 <h3 className="empty-title">No Communities Found</h3>
                 <p className="empty-subtitle">
                   Create your first community to get started with community management.
