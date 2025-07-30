@@ -31,11 +31,34 @@ from app.models.connect import (
     CommunityAdminCreate, CommunityAdmin,
     IdentifierVerificationRequest, IdentifierVerificationResponse
 )
+
+from fastapi import HTTPException, status
 from app.services.connect_service import ConnectService
 
 # Initialize router and logger
 router = APIRouter(prefix="/connect", tags=["connect"])
 logger = get_logger(__name__)
+
+@router.delete("/communities/{community_id}")
+async def delete_community(
+    community_id: int,
+    user: UserResponse = Depends(get_current_user),
+    connect_service: ConnectService = Depends(get_connect_service)
+):
+    """
+    Delete a community (super admin only).
+
+    Args:
+        community_id: ID of the community to delete
+        user: Current authenticated user (must be super admin)
+        connect_service: Connect service instance
+
+    Returns:
+        Dict: Success status
+    """
+    if not await connect_service.delete_community(community_id, user.email):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Community not found or not deleted")
+    return {"success": True, "message": "Community deleted successfully"}
 
 
 def get_connect_service() -> ConnectService:
