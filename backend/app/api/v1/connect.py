@@ -39,6 +39,12 @@ from app.services.connect_service import ConnectService
 router = APIRouter(prefix="/connect", tags=["connect"])
 logger = get_logger(__name__)
 
+
+def get_connect_service() -> ConnectService:
+    """Dependency to get ConnectService instance."""
+    return ConnectService()
+
+
 @router.delete("/communities/{community_id}")
 async def delete_community(
     community_id: int,
@@ -59,11 +65,6 @@ async def delete_community(
     if not await connect_service.delete_community(community_id, user.email):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Community not found or not deleted")
     return {"success": True, "message": "Community deleted successfully"}
-
-
-def get_connect_service() -> ConnectService:
-    """Dependency to get ConnectService instance."""
-    return ConnectService()
 
 
 @router.get("/communities", response_model=List[CommunityResponse])

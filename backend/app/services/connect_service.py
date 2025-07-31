@@ -1,59 +1,3 @@
-    async def delete_community(self, community_id: int, requester_email: str) -> bool:
-        """
-        Delete a community (super admin only).
-
-        Args:
-            community_id: ID of the community to delete
-            requester_email: Email of the requester
-
-        Returns:
-            bool: True if successfully deleted
-        """
-        if not self._is_super_admin(requester_email):
-            logger.warning(
-                "Unauthorized attempt to delete community",
-                extra={
-                    "community_id": community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only super admins can delete communities"
-            )
-
-        async with get_db_session() as session:
-            # Find the community
-            community = await session.execute(
-                select(CommunityORM).where(CommunityORM.id == community_id)
-            )
-            community = community.scalar_one_or_none()
-
-            if not community:
-                return False
-
-            logger.info(
-                "Deleting community",
-                extra={
-                    "community_id": community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-
-            await session.delete(community)
-            await session.commit()
-
-            logger.info(
-                "Community deleted successfully",
-                extra={
-                    "community_id": community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-            return True
 """
 Service layer for Connect page functionality.
 
@@ -1095,4 +1039,61 @@ class ConnectService:
                 }
             )
             
+            return True
+
+    async def delete_community(self, community_id: int, requester_email: str) -> bool:
+        """
+        Delete a community (super admin only).
+
+        Args:
+            community_id: ID of the community to delete
+            requester_email: Email of the requester
+
+        Returns:
+            bool: True if successfully deleted
+        """
+        if not self._is_super_admin(requester_email):
+            logger.warning(
+                "Unauthorized attempt to delete community",
+                extra={
+                    "community_id": community_id,
+                    "email_id": requester_email,
+                    "component": "connect_service"
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only super admins can delete communities"
+            )
+
+        async with get_db_session() as session:
+            # Find the community
+            community = await session.execute(
+                select(CommunityORM).where(CommunityORM.id == community_id)
+            )
+            community = community.scalar_one_or_none()
+
+            if not community:
+                return False
+
+            logger.info(
+                "Deleting community",
+                extra={
+                    "community_id": community_id,
+                    "email_id": requester_email,
+                    "component": "connect_service"
+                }
+            )
+
+            await session.delete(community)
+            await session.commit()
+
+            logger.info(
+                "Community deleted successfully",
+                extra={
+                    "community_id": community_id,
+                    "email_id": requester_email,
+                    "component": "connect_service"
+                }
+            )
             return True
