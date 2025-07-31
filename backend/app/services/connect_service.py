@@ -235,19 +235,12 @@ class ConnectService:
 
     async def get_user_profile(self, uid: str) -> Optional[UserProfileResponse]:
         """
-        Get user profile by UID.
-
-        Args:
-            uid: User's unique identifier
-
-        Returns:
-            Optional[UserProfileResponse]: User profile if exists
+        Get user profile by UID, including actual identifiers for the current user.
         """
         logger.info(
             f"DEBUG: Getting user profile for UID: '{uid}' (type: {type(uid)}, length: {len(uid)})",
             extra={"user_uid": uid, "component": "connect_service"}
         )
-        
         async with get_db_session() as session:
             profile = await session.execute(
                 select(UserProfileORM).where(UserProfileORM.uid == uid)
@@ -260,10 +253,8 @@ class ConnectService:
             )
 
             if not profile:
-                # Let's also check what profiles exist in the database
                 all_profiles = await session.execute(select(UserProfileORM))
                 all_profiles = all_profiles.scalars().all()
-                
                 logger.info(
                     f"DEBUG: No profile found for UID '{uid}'. All profiles in DB:",
                     extra={"user_uid": uid, "component": "connect_service"}
@@ -273,19 +264,28 @@ class ConnectService:
                         f"DEBUG: Profile ID {p.id}: UID='{p.uid}' (type: {type(p.uid)}, length: {len(p.uid)}), email='{p.email}'",
                         extra={"user_uid": uid, "component": "connect_service"}
                     )
-                
                 return None
+
+            # Only return identifier presence and custom identifier names (not unhashed values)
+            custom_identifiers = []
+            if profile.custom_identifiers:
+                for cid in profile.custom_identifiers:
+                    # Only show the name, not the hash
+                    custom_identifiers.append({"name": cid.get("name", "Custom")})
 
             return UserProfileResponse(
                 id=profile.id,
                 uid=profile.uid,
                 email=profile.email,
                 name=profile.name,
-                has_personal_info=bool(
-                    profile.personal_email_hash and profile.phone_hash),
+                has_personal_info=bool(profile.personal_email_hash and profile.phone_hash),
                 custom_identifiers_count=len(profile.custom_identifiers or []),
                 created_at=profile.created_at,
-                updated_at=profile.updated_at
+                updated_at=profile.updated_at,
+                # Do not return unhashed values
+                personal_email=None,
+                phone_number=None,
+                custom_identifiers=custom_identifiers
             )
 
     async def get_communities(

@@ -1,3 +1,68 @@
+/* Profile Panel Overlay Styles */
+.profile-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-panel-modal {
+  min-width: 340px;
+  max-width: 95vw;
+  background: #1f121a;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  padding: 0;
+  z-index: 2100;
+}
+
+.identifier-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.identifier-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  background: rgba(239, 223, 194, 0.05);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.identifier-type {
+  font-weight: 600;
+  color: #efdfc2;
+  margin-right: 0.5rem;
+}
+
+.identifier-value {
+  color: #f87272;
+  font-family: monospace;
+  margin-right: 0.5rem;
+}
+
+.confirm-delete {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-left: 1rem;
+}
+
+.empty-state {
+  color: #efdfc2;
+  text-align: center;
+  margin: 2rem 0;
+}
+
 /* Admin Buttons Row - below subtitle, center aligned */
 .admin-buttons-row {
   display: flex;
@@ -1990,6 +2055,7 @@
     transform: none;
   }
 }
+
 /* Profile Setup Section Styles */
 .profile-setup-container {
   width: 100%;
@@ -1998,55 +2064,51 @@
 }
 
 .setup-card {
+
+  max-width: 600px;
+  margin: 0 auto;
   background: linear-gradient(135deg, rgba(139, 74, 115, 0.08) 0%, rgba(200, 90, 62, 0.08) 50%, rgba(143, 90, 51, 0.08) 100%);
-  border: 2px solid rgba(143, 90, 51, 0.3);
+  border: 2px solid var(--card-border);
   border-radius: 15px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
-  margin: 0 auto;
-  overflow: hidden;
-  margin-bottom: 7rem;
+  box-shadow: 0 15px 35px var(--hover-shadow);
 }
 
 .setup-header {
-  background: linear-gradient(135deg, rgba(143, 90, 51, 0.15) 0%, rgba(200, 90, 62, 0.1) 100%);
-  border-bottom: 1px solid rgba(143, 90, 51, 0.2);
-  padding: 2rem;
   text-align: center;
+  padding: 2rem 2rem 1rem;
 }
 
-.setup-header .card-title {
-  color: #EFDFC2;
-  font-size: 1.8rem;
+.card-title {
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
-  font-family: "Montserrat", sans-serif;
+  color: #EFDFC2;
+  margin-bottom: 0.5rem;
 }
 
-.setup-header .card-description {
-  color: rgba(239, 223, 194, 0.85);
-  line-height: 1.6;
+.card-description {
   font-size: 1rem;
-  margin: 0;
+  color: rgba(239, 223, 194, 0.8);
+  line-height: 1.5;
 }
 
 .setup-form {
-  padding: 2rem;
+  padding: 1.5rem 2rem 2rem;
 }
 
 .privacy-notice {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
-  border-radius: 8px;
+  background: rgba(143, 90, 51, 0.15);
+  border: 1px solid rgba(143, 90, 51, 0.4);
+  color: #EFDFC2;
   padding: 1rem;
+  border-radius: 10px;
   margin-bottom: 1.5rem;
-  backdrop-filter: blur(5px);
-}
-
-.privacy-notice p {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   line-height: 1.5;
-  margin: 0;
+
+  strong {
+    color: #F87272;
+  }
 }
 
 .form-group {
@@ -2055,98 +2117,118 @@
 
 .form-label {
   display: block;
-  color: #EFDFC2;
   font-weight: 500;
+  color: #EFDFC2;
   margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.75rem 1rem;
   border: 2px solid rgba(143, 90, 51, 0.4);
   border-radius: 10px;
   background: rgba(31, 18, 26, 0.8);
   color: #EFDFC2;
-  font-family: "Montserrat", sans-serif;
+  font-family: 'Montserrat', sans-serif;
   backdrop-filter: blur(5px);
   transition: all 0.3s ease;
-  font-size: 1rem;
-}
 
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  background: rgba(31, 18, 26, 0.95);
-  box-shadow: 0 0 0 2px rgba(239, 223, 194, 0.2);
-  transform: translateY(-1px);
-}
+  &:focus {
+    outline: none;
+    border-color: #F87272;
+    background: rgba(31, 18, 26, 0.9);
+    box-shadow: 0 0 20px rgba(248, 114, 114, 0.2);
+  }
 
-.form-input::placeholder {
-  color: rgba(239, 223, 194, 0.6);
+  &::placeholder {
+    color: rgba(239, 223, 194, 0.6);
+  }
 }
 
 .setup-button {
   width: 100%;
-  padding: 0.875rem 1.5rem;
-  border: 2px solid var(--card-border);
+  background: linear-gradient(135deg, #F87272 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(143, 90, 51, 0.2) 0%, rgba(200, 90, 62, 0.15) 100%);
-  color: #EFDFC2;
   font-weight: 600;
   font-size: 1rem;
-  font-family: "Montserrat", sans-serif;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
+  box-shadow: 0 5px 15px rgba(248, 114, 114, 0.3);
 
-.setup-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(143, 90, 51, 0.4);
-  border-color: #F87272;
-  background: linear-gradient(135deg, rgba(143, 90, 51, 0.3) 0%, rgba(200, 90, 62, 0.25) 100%);
-}
-
-.setup-button:active {
-  transform: translateY(0);
-}
-
-/* Mobile responsiveness for profile setup */
-@media (max-width: 768px) {
-  .profile-setup-container {
-    padding: 1rem;
-    margin: 1rem 0;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(248, 114, 114, 0.4);
+    background: linear-gradient(135deg, #dc2626 0%, #F87272 100%);
   }
 
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #6b7280;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* Responsive adjustments for profile setup */
+@media (max-width: 600px) {
   .setup-card {
-    max-width: 100%;
-    margin: 0;
+    margin: 0 1rem;
   }
 
   .setup-header {
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 0.5rem;
   }
 
-  .setup-header .card-title {
+  .card-title {
     font-size: 1.5rem;
   }
 
   .setup-form {
-    padding: 1.5rem;
+    padding: 1rem 1.5rem 1.5rem;
   }
+}
 
-  .privacy-notice {
-    padding: 0.75rem;
-  }
+/* Profile Setup Container */
+.profile-setup-containerr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 140px);
+  /* Adjust based on header/footer height */
+  padding: 2rem 0;
+}
 
-  .form-input {
-    padding: 0.75rem;
-  }
+/* Admin Panel Overlay Styles */
+.admin-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(31, 18, 26, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+  animation: fadeIn 0.3s ease;
+}
 
-  .setup-button {
-    padding: 0.75rem 1rem;
-  }
+/* Adjustments for panels when they are overlays */
+.admin-panel-overlay .community-admin-panel,
+.admin-panel-overlay .super-admin-panel {
+  /* Remove any positioning that conflicts with the overlay */
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: 1200px;
+  /* Or whatever max-width you prefer */
 }

@@ -326,7 +326,7 @@ class CommunityResponse(BaseModel):
 
 
 class UserProfileResponse(BaseModel):
-    """Response model for user profile."""
+    """Response model for user profile, including actual identifiers for the current user."""
     id: int
     uid: str
     email: str
@@ -335,6 +335,9 @@ class UserProfileResponse(BaseModel):
     custom_identifiers_count: int = 0
     created_at: datetime
     updated_at: Optional[datetime]
+    personal_email: Optional[str] = None
+    phone_number: Optional[str] = None
+    custom_identifiers: Optional[list] = None
 
 
 class JoinRequestResponse(BaseModel):

@@ -17,6 +17,12 @@
 
 /* Super Admin Panel Specific Styles */
 .super-admin-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(31, 18, 26, 0.95);
   backdrop-filter: blur(15px);
   display: flex;
   align-items: center;

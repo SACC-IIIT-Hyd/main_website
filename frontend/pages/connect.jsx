@@ -19,6 +19,7 @@ import { Toaster, toast } from 'sonner';
 import NavbarComponent from '@/components/navbar';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
 import CommunityAdminPanel from '@/components/CommunityAdminPanel';
+import ProfilePanel from '@/components/ProfilePanel';
 import Bottom from '@/components/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,35 @@ const ConnectPage = () => {
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
   const [showCommunityAdminPanel, setShowCommunityAdminPanel] = useState(false);
   const [showJoinCommunityPanel, setShowJoinCommunityPanel] = useState(null); // holds the community object
+  const [showProfilePanel, setShowProfilePanel] = useState(false);
+  // Delete identifier handler
+  const handleDeleteIdentifier = async (identifier) => {
+    let endpoint = '/api/connect/profile/identifier';
+    let payload = {};
+    if (identifier.type === 'Email') {
+      payload = { type: 'personal_email' };
+    } else if (identifier.type === 'Phone') {
+      payload = { type: 'phone_number' };
+    } else {
+      payload = { type: 'custom', value: identifier.value };
+    }
+    try {
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      if (response.ok) {
+        toast.success('Identifier deleted');
+        fetchUserProfile();
+      } else {
+        toast.error('Failed to delete identifier');
+      }
+    } catch (e) {
+      toast.error('Error deleting identifier');
+    }
+  };
 
   useEffect(() => {
     fetchUserProfile();
@@ -269,8 +299,16 @@ const ConnectPage = () => {
             </div>
           </div>
 
-          {/* Admin Buttons */}
+          {/* Admin & Profile Buttons */}
           <div className="admin-buttons-row">
+            <Button
+              className="admin-btn profile-btn"
+              onClick={() => setShowProfilePanel(true)}
+              title="Profile Panel"
+            >
+              <Users className="icon" />
+              <span className="btn-text">My Profile</span>
+            </Button>
             {userRoles.is_community_admin && (
               <Button
                 className="admin-btn community-admin-btn"
@@ -292,15 +330,16 @@ const ConnectPage = () => {
               </Button>
             )}
           </div>
-
-          {/* Admin Panels */}
-          {showSuperAdminPanel && (
-            <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
+          {/* Profile Panel Overlay */}
+          {showProfilePanel && (
+            <ProfilePanel
+              userProfile={userProfile}
+              onDeleteIdentifier={handleDeleteIdentifier}
+              onClose={() => setShowProfilePanel(false)}
+            />
           )}
 
-          {showCommunityAdminPanel && (
-            <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
-          )}
+
 
           {/* Search and Filters */}
           <div className="search-filter-container">
@@ -465,6 +504,19 @@ const ConnectPage = () => {
         </div>
         <Bottom />
       </div>
+
+      {/* Admin Panel Overlays */}
+      {showSuperAdminPanel && (
+        <div className="admin-panel-overlay">
+          <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
+        </div>
+      )}
+
+      {showCommunityAdminPanel && (
+        <div className="admin-panel-overlay">
+          <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
+        </div>
+      )}
     </>
   );
 };

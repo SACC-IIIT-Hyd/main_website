@@ -17,10 +17,6 @@
 
 /* Community Admin Panel Specific Styles */
 .community-admin-panel {
-    /* Removed fixed positioning to make it static */
-    background: rgba(31, 18, 26, 0.95);
-    backdrop-filter: blur(15px);
-    display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
@@ -394,8 +390,6 @@
 .fixed-inset {
     /* Changed to relative positioning to allow natural flow */
     position: relative;
-    background: rgba(31, 18, 26, 0.95);
-    backdrop-filter: blur(15px);
     display: flex;
     align-items: center;
     justify-content: center;
