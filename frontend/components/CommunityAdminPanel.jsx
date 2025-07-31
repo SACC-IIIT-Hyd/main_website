@@ -5,6 +5,23 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Users, X, Search, CheckCircle, XCircle, Edit, Save, Upload, Globe } from 'lucide-react';
 import '@/styles/CommunityAdminPanel.scss';
+import { Toaster, toast } from 'sonner';
+
+const ConfirmDialog = ({ open, title, description, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel', loading }) => {
+  if (!open) return null;
+  return (
+    <div className="dialog-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1000 }}>
+      <div className="dialog-modal" style={{ background: 'white', maxWidth: 400, margin: '10% auto', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.2)', padding: 24 }}>
+        <h3 style={{ fontWeight: 600, fontSize: 20, marginBottom: 8 }}>{title}</h3>
+        <div style={{ marginBottom: 24 }}>{description}</div>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="outline" onClick={onCancel} className="confirm-dialog-button">{cancelText}</Button>
+          <Button onClick={onConfirm} disabled={loading} className="confirm-dialog-button">{loading ? 'Submitting...' : confirmText}</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CommunityAdminPanel = ({ onClose }) => {
   const [adminCommunities, setAdminCommunities] = useState([]);
@@ -193,17 +210,17 @@ const CommunityManagement = ({ community }) => {
       });
 
       if (response.ok) {
-        alert('Community updated successfully!');
+        toast.success('Community updated successfully!');
         setIsEditing(false);
         // Update the community object (would need to be passed up to parent)
         Object.assign(community, await response.json());
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error || error.detail || 'Failed to update community'}`);
+        toast.error(`Error: ${error.error || error.detail || 'Failed to update community'}`);
       }
     } catch (error) {
       console.error('Error updating community:', error);
-      alert('Failed to update community. Please try again.');
+      toast.error('Failed to update community. Please try again.');
     } finally {
       setUpdateLoading(false);
     }
@@ -211,7 +228,7 @@ const CommunityManagement = ({ community }) => {
 
   const handleVerifyIdentifier = async () => {
     if (!identifierValue.trim()) {
-      alert('Please enter an identifier to verify');
+      toast.error('Please enter an identifier to verify');
       return;
     }
 
@@ -231,11 +248,11 @@ const CommunityManagement = ({ community }) => {
         setVerificationResult(result);
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error || error.detail || 'Failed to verify identifier'}`);
+        toast.error(`Error: ${error.error || error.detail || 'Failed to verify identifier'}`);
       }
     } catch (error) {
       console.error('Error verifying identifier:', error);
-      alert('Failed to verify identifier. Please try again.');
+      toast.error('Failed to verify identifier. Please try again.');
     } finally {
       setVerificationLoading(false);
     }
@@ -249,7 +266,7 @@ const CommunityManagement = ({ community }) => {
         <p className="section-description">
           Enter an identifier to check if any alumnus has applied to join this community with that identifier.
         </p>
-        
+
         <div className="verification-form">
           <div className="input-group">
             <Input
@@ -258,7 +275,7 @@ const CommunityManagement = ({ community }) => {
               placeholder="Enter identifier to verify (email, phone, etc.)"
               className="verification-input"
             />
-            <Button 
+            <Button
               onClick={handleVerifyIdentifier}
               disabled={verificationLoading}
               className="verify-button"
@@ -428,7 +445,7 @@ const CommunityManagement = ({ community }) => {
                 )}
                 {community.invite_link && (
                   <div className="invite-link">
-                    <strong>Invite Link:</strong> 
+                    <strong>Invite Link:</strong>
                     <a href={community.invite_link} target="_blank" rel="noopener noreferrer">
                       {community.invite_link}
                     </a>

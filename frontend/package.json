@@ -35,6 +35,7 @@
     "react-pageflip": "^2.0.3",
     "react-pdf": "^7.7.2",
     "sass": "^1.43.4",
+    "sonner": "^2.0.6",
     "styled-components": "^6.1.12",
     "tailwind-merge": "^2.2.1",
     "tailwindcss": "^3.4.0",

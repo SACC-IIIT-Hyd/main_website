@@ -3,6 +3,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Users, Trash2, Edit, X, MessageSquare, Phone, Briefcase, Send, Linkedin, Globe } from 'lucide-react';
 import '@/styles/SuperAdminPanel.scss';
+import { Toaster, toast } from 'sonner';
+
+// ConfirmDialog for confirmations
+const ConfirmDialog = ({ open, title, description, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel', loading }) => {
+  if (!open) return null;
+  return (
+    <div className="dialog-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1000 }}>
+      <div className="dialog-modal" style={{ background: 'white', maxWidth: 400, margin: '10% auto', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.2)', padding: 24 }}>
+        <h3 style={{ fontWeight: 600, fontSize: 20, marginBottom: 8 }}>{title}</h3>
+        <div style={{ marginBottom: 24 }}>{description}</div>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="outline" onClick={onCancel} className="confirm-dialog-button">{cancelText}</Button>
+          <Button onClick={onConfirm} disabled={loading} className="confirm-dialog-button">{loading ? 'Submitting...' : confirmText}</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SuperAdminPanel = ({ onClose }) => {
   const [communities, setCommunities] = useState([]);
@@ -12,6 +30,8 @@ const SuperAdminPanel = ({ onClose }) => {
   const [selectedCommunityForEdit, setSelectedCommunityForEdit] = useState(null);
   const [selectedCommunityForDelete, setSelectedCommunityForDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showRemoveAdminDialog, setShowRemoveAdminDialog] = useState(false);
+  const [pendingRemoveAdminId, setPendingRemoveAdminId] = useState(null);
 
   useEffect(() => {
     fetchCommunities();
@@ -42,6 +62,36 @@ const SuperAdminPanel = ({ onClose }) => {
     { value: 'linkedin', label: 'LinkedIn', icon: <Linkedin size={20} /> },
     { value: 'other', label: 'Other', icon: <Globe size={20} /> }
   ];
+
+  const handleRemoveAdmin = async (adminId) => {
+    setPendingRemoveAdminId(adminId);
+    setShowRemoveAdminDialog(true);
+  };
+
+  const confirmRemoveAdmin = async () => {
+    if (!pendingRemoveAdminId) return;
+
+    try {
+      const response = await fetch(`/api/connect/community-admins/${pendingRemoveAdminId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        toast.success('Admin removed successfully!');
+        fetchCommunityAdmins(); // Refresh the list
+      } else {
+        const error = await response.json();
+        toast.error(`Error: ${error.message || 'Failed to remove admin'}`);
+      }
+    } catch (error) {
+      console.error('Error removing admin:', error);
+      toast.error('Failed to remove admin. Please try again.');
+    } finally {
+      setShowRemoveAdminDialog(false);
+      setPendingRemoveAdminId(null);
+    }
+  };
 
   return (
     <>
@@ -236,6 +286,18 @@ const SuperAdminPanel = ({ onClose }) => {
           fetchCommunities();
         }}
       />
+
+      {/* Confirm Dialog for removing admin */}
+      <ConfirmDialog
+        open={showRemoveAdminDialog}
+        title="Remove Admin"
+        description="Are you sure you want to remove this admin from the community?"
+        onConfirm={confirmRemoveAdmin}
+        onCancel={() => setShowRemoveAdminDialog(false)}
+        confirmText="Yes, Remove"
+        cancelText="Cancel"
+        loading={false}
+      />
     </>
   );
 };
@@ -277,7 +339,7 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
       });
 
       if (response.ok) {
-        alert('Community created successfully!');
+        toast.success('Community created successfully!');
         setFormData({
           name: '',
           description: '',
@@ -293,11 +355,11 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
         const error = await response.json();
         console.error('Backend validation error:', error);
         const errorMessage = error.detail?.[0]?.msg || error.detail || error.message || 'Unknown validation error';
-        alert(`Error: ${errorMessage}`);
+        toast.error(`Error: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error creating community:', error);
-      alert('Failed to create community. Please try again.');
+      toast.error('Failed to create community. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -455,7 +517,7 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
       });
 
       if (response.ok) {
-        alert('Community admin assigned successfully!');
+        toast.success('Community admin assigned successfully!');
         setFormData({
           community_id: '',
           admin_email: '',
@@ -464,11 +526,11 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
         onSuccess();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error}`);
+        toast.error(`Error: ${error.error}`);
       }
     } catch (error) {
       console.error('Error assigning admin:', error);
-      alert('Failed to assign admin. Please try again.');
+      toast.error('Failed to assign admin. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -570,24 +632,32 @@ const CommunityAdminManagement = ({ isOpen, community, onClose }) => {
   };
 
   const handleRemoveAdmin = async (adminId) => {
-    if (!confirm('Are you sure you want to remove this admin?')) return;
+    setPendingRemoveAdminId(adminId);
+    setShowRemoveAdminDialog(true);
+  };
+
+  const confirmRemoveAdmin = async () => {
+    if (!pendingRemoveAdminId) return;
 
     try {
-      const response = await fetch(`/api/connect/community-admins/${adminId}`, {
+      const response = await fetch(`/api/connect/community-admins/${pendingRemoveAdminId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
 
       if (response.ok) {
-        alert('Admin removed successfully!');
+        toast.success('Admin removed successfully!');
         fetchCommunityAdmins(); // Refresh the list
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message || 'Failed to remove admin'}`);
+        toast.error(`Error: ${error.message || 'Failed to remove admin'}`);
       }
     } catch (error) {
       console.error('Error removing admin:', error);
-      alert('Failed to remove admin. Please try again.');
+      toast.error('Failed to remove admin. Please try again.');
+    } finally {
+      setShowRemoveAdminDialog(false);
+      setPendingRemoveAdminId(null);
     }
   };
 
@@ -708,17 +778,17 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
       });
 
       if (response.ok) {
-        alert('Community updated successfully!');
+        toast.success('Community updated successfully!');
         onSuccess();
       } else {
         const error = await response.json();
         console.error('Backend validation error:', error);
         const errorMessage = error.detail?.[0]?.msg || error.detail || error.message || 'Unknown validation error';
-        alert(`Error: ${errorMessage}`);
+        toast.error(`Error: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error updating community:', error);
-      alert('Failed to update community. Please try again.');
+      toast.error('Failed to update community. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -858,15 +928,15 @@ const DeleteCommunityModal = ({ isOpen, community, onClose, onSuccess }) => {
       });
 
       if (response.ok) {
-        alert('Community deleted successfully!');
+        toast.success('Community deleted successfully!');
         onSuccess();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message || 'Failed to delete community'}`);
+        toast.error(`Error: ${error.message || 'Failed to delete community'}`);
       }
     } catch (error) {
       console.error('Error deleting community:', error);
-      alert('Failed to delete community. Please try again.');
+      toast.error('Failed to delete community. Please try again.');
     } finally {
       setLoading(false);
     }
