@@ -2,7 +2,7 @@
 Service layer for Connect page functionality.
 
 This module provides business logic for managing alumni communities,
-user profiles, and join requests with proper security and validation using PostgreSQL.
+user profiles, and identifiers with proper security and validation using PostgreSQL.
 
 @module: app.services.connect_service
 @author: unignoramus11
@@ -12,7 +12,7 @@ user profiles, and join requests with proper security and validation using Postg
 Example:
     ```python
     from app.services.connect_service import ConnectService
-    
+
     service = ConnectService()
     communities = await service.get_communities()
     ```
@@ -20,10 +20,11 @@ Example:
 
 import hashlib
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from fastapi import HTTPException, status
-from sqlalchemy import select, and_, or_, func, update, delete
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, and_, or_, func
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.core.config import get_settings
 from app.core.database import get_db_session
@@ -31,12 +32,11 @@ from app.core.logging import get_logger
 from app.core.exceptions import ValidationError, NotFoundError
 from app.models.connect import (
     # ORM Models
-    CommunityORM, UserProfileORM, JoinRequestORM, CommunityAdminORM,
+    CommunityORM, UserProfileORM, CommunityAdminORM, IdentifierORM,
     # Pydantic Models
-    Community, CommunityCreate, CommunityUpdate, CommunityResponse,
-    UserProfile, UserProfileCreate, UserProfileResponse,
-    JoinRequest, JoinRequestCreate, JoinRequestResponse,
-    CommunityAdmin, CommunityAdminCreate,
+    CommunityCreate, CommunityUpdate, CommunityResponse,
+    UserProfileCreate, UserProfileResponse,
+    CommunityAdmin, CommunityAdminCreate,  IdentifierCreate,
     IdentifierVerificationRequest, IdentifierVerificationResponse
 )
 
@@ -47,13 +47,17 @@ class ConnectService:
     """
     Service class for Connect page functionality.
 
-    This class handles all business logic for community management,
-    user profiles, and join requests with proper security measures using PostgreSQL.
+    This class handles all business logic for community management and
+    user profiles with proper security measures using PostgreSQL.
     """
 
     def __init__(self):
         """Initialize the ConnectService."""
         self.settings = get_settings()
+        logger.debug(
+            "ConnectService initialized",
+            extra={"component": "connect_service"}
+        )
 
     def _hash_identifier(self, identifier: str) -> str:
         """
@@ -67,7 +71,6 @@ class ConnectService:
         """
         secret = self.settings.hash_key.encode('utf-8')
         identifier_bytes = identifier.lower().strip().encode('utf-8')
-
         combined = secret + identifier_bytes + secret
         return hashlib.sha256(combined).hexdigest()
 
@@ -103,7 +106,7 @@ class ConnectService:
                     CommunityAdminORM.community_id == community_id)
 
             result = await session.execute(query)
-            return result.first() is not None
+            return result.scalars().first() is not None
 
     async def _get_user_admin_communities(self, email: str) -> List[int]:
         """
@@ -122,7 +125,55 @@ class ConnectService:
             result = await session.execute(query)
             return [row[0] for row in result.fetchall()]
 
-    async def create_user_profile(
+    async def _get_or_create_user_profile(
+        self,
+        uid: str,
+        email: str,
+        name: str
+    ) -> Tuple[UserProfileORM, bool]:
+        """
+        Get existing user profile or create a new one.
+
+        Args:
+            uid: User's unique identifier
+            email: User's institutional email
+            name: User's full name
+
+        Returns:
+            Tuple[UserProfileORM, bool]: (user_profile, created)
+                where created is True if a new profile was created
+        """
+        async with get_db_session() as session:
+            query = select(UserProfileORM).where(UserProfileORM.uid == uid)
+            result = await session.execute(query)
+            profile = result.scalars().first()
+
+            if profile:
+                return profile, False
+
+            # Create new profile
+            profile = UserProfileORM(
+                uid=uid,
+                email=email,
+                name=name
+            )
+
+            session.add(profile)
+            await session.commit()
+            await session.refresh(profile)
+
+            logger.info(
+                "Created new user profile",
+                extra={
+                    "user_uid": uid,
+                    "email": email,
+                    "component": "connect_service"
+                }
+            )
+
+            return profile, True
+
+    async def update_user_profile(
         self,
         uid: str,
         email: str,
@@ -130,162 +181,638 @@ class ConnectService:
         profile_data: UserProfileCreate
     ) -> UserProfileResponse:
         """
-        Create or update user profile with personal information.
+        Update user profile.
 
         Args:
             uid: User's unique identifier
             email: User's institutional email
             name: User's full name
-            profile_data: Personal information to store
+            profile_data: Identifiers to store
 
         Returns:
             UserProfileResponse: Created/updated profile
         """
         logger.info(
-            "Creating user profile",
+            "Updating user profile with identifiers",
             extra={
                 "user_uid": uid,
-                "email_id": email,
+                "email": email,
+                "name": name,
                 "component": "connect_service"
             }
         )
-        
-        logger.info(
-            f"DEBUG: Creating profile for UID: '{uid}' (type: {type(uid)}, length: {len(uid)}), email: '{email}'",
-            extra={"user_uid": uid, "email_id": email, "component": "connect_service"}
-        )
 
         try:
-            # Hash personal information
-            personal_email_hash = self._hash_identifier(
-                profile_data.personal_email)
-            phone_hash = self._hash_identifier(profile_data.phone_number)
-
             async with get_db_session() as session:
-                # Check if profile exists
-                existing_profile = await session.execute(
-                    select(UserProfileORM).where(UserProfileORM.uid == uid)
+                # Get or create profile
+                profile, _created = await self._get_or_create_user_profile(uid, email, name)
+
+                # Create identifiers for the user
+                identifiers_data = []
+                for identifier_create in profile_data.identifiers:
+                    identifier_hash = self._hash_identifier(
+                        identifier_create.value)
+
+                    # Create new identifier
+                    identifier = IdentifierORM(
+                        user_id=profile.id,
+                        label=identifier_create.label,
+                        identifier_hash=identifier_hash
+                    )
+
+                    session.add(identifier)
+                    identifiers_data.append({
+                        "label": identifier_create.label,
+                        "created_at": datetime.utcnow()
+                    })
+
+                await session.commit()
+
+                # Get all identifiers for the user
+                query = select(IdentifierORM).where(
+                    IdentifierORM.user_id == profile.id)
+                result = await session.execute(query)
+                identifiers = result.scalars().all()
+
+                # Build response
+                return UserProfileResponse(
+                    id=profile.id,
+                    uid=profile.uid,
+                    email=profile.email,
+                    name=profile.name,
+                    created_at=profile.created_at,
+                    updated_at=profile.updated_at,
+                    identifiers=identifiers_data,
+                    identifiers_count=len(identifiers)
                 )
-                existing_profile = existing_profile.scalar_one_or_none()
 
-                if existing_profile:
-                    # Update existing profile
-                    existing_profile.personal_email_hash = personal_email_hash
-                    existing_profile.phone_hash = phone_hash
-                    existing_profile.updated_at = datetime.utcnow()
-
-                    await session.commit()
-                    await session.refresh(existing_profile)
-                    profile = existing_profile
-
-                    logger.info(
-                        "User profile updated",
-                        extra={
-                            "user_uid": uid,
-                            "email_id": email,
-                            "component": "connect_service"
-                        }
-                    )
-                else:
-                    # Create new profile
-                    profile = UserProfileORM(
-                        uid=uid,
-                        email=email,
-                        name=name,
-                        personal_email_hash=personal_email_hash,
-                        phone_hash=phone_hash,
-                        custom_identifiers=[]
-                    )
-
-                    session.add(profile)
-                    await session.commit()
-                    await session.refresh(profile)
-
-                    logger.info(
-                        "User profile created",
-                        extra={
-                            "user_uid": uid,
-                            "email_id": email,
-                            "component": "connect_service"
-                        }
-                    )
-
-            return UserProfileResponse(
-                id=profile.id,
-                uid=profile.uid,
-                email=profile.email,
-                name=profile.name,
-                has_personal_info=True,
-                custom_identifiers_count=len(profile.custom_identifiers or []),
-                created_at=profile.created_at,
-                updated_at=profile.updated_at
-            )
-
-        except Exception as e:
+        except SQLAlchemyError as e:
             logger.error(
-                "Failed to create user profile",
+                "Database error creating user profile",
                 extra={
                     "user_uid": uid,
-                    "email_id": email,
+                    "email": email,
+                    "error": str(e),
+                    "component": "connect_service"
+                }
+            )
+            raise ValidationError(f"Failed to create user profile: {str(e)}")
+        except Exception as e:
+            logger.error(
+                "Unexpected error creating user profile",
+                extra={
+                    "user_uid": uid,
+                    "email": email,
                     "error": str(e),
                     "component": "connect_service"
                 }
             )
             raise ValidationError(f"Failed to create user profile: {str(e)}")
 
-    async def get_user_profile(self, uid: str) -> Optional[UserProfileResponse]:
+    async def get_user_profile(self, uid: str, current_user_uid: Optional[str] = None) -> UserProfileResponse:
         """
-        Get user profile by UID, including actual identifiers for the current user.
+        Get user profile by UID, including identifiers if it's the current user.
+
+        Args:
+            uid: User's unique identifier
+            current_user_uid: UID of the requesting user (for permission checks)
+
+        Returns:
+            UserProfileResponse: User profile data
         """
         logger.info(
-            f"DEBUG: Getting user profile for UID: '{uid}' (type: {type(uid)}, length: {len(uid)})",
-            extra={"user_uid": uid, "component": "connect_service"}
+            "Getting user profile",
+            extra={
+                "user_uid": uid,
+                "component": "connect_service"
+            }
         )
-        async with get_db_session() as session:
-            profile = await session.execute(
-                select(UserProfileORM).where(UserProfileORM.uid == uid)
-            )
-            profile = profile.scalar_one_or_none()
 
-            logger.info(
-                f"DEBUG: Profile query result for UID '{uid}': {profile}",
-                extra={"user_uid": uid, "component": "connect_service"}
+        async with get_db_session() as session:
+            # Get profile with identifiers
+            query = select(UserProfileORM).where(UserProfileORM.uid == uid).options(
+                selectinload(UserProfileORM.identifiers)
             )
+            result = await session.execute(query)
+            profile = result.scalars().first()
 
             if not profile:
-                all_profiles = await session.execute(select(UserProfileORM))
-                all_profiles = all_profiles.scalars().all()
-                logger.info(
-                    f"DEBUG: No profile found for UID '{uid}'. All profiles in DB:",
-                    extra={"user_uid": uid, "component": "connect_service"}
+                logger.warning(
+                    "User profile not found",
+                    extra={
+                        "user_uid": uid,
+                        "component": "connect_service"
+                    }
                 )
-                for p in all_profiles:
-                    logger.info(
-                        f"DEBUG: Profile ID {p.id}: UID='{p.uid}' (type: {type(p.uid)}, length: {len(p.uid)}), email='{p.email}'",
-                        extra={"user_uid": uid, "component": "connect_service"}
-                    )
-                return None
+                raise NotFoundError(f"User profile not found for UID: {uid}")
 
-            # Only return identifier presence and custom identifier names (not unhashed values)
-            custom_identifiers = []
-            if profile.custom_identifiers:
-                for cid in profile.custom_identifiers:
-                    # Only show the name, not the hash
-                    custom_identifiers.append({"name": cid.get("name", "Custom")})
+            # Build identifier response - only include details for current user
+            identifiers_data = None
+            identifiers_count = len(profile.identifiers)
+
+            if current_user_uid == uid:  # Only show identifiers to the profile owner
+                identifiers_data = [
+                    {
+                        "id": identifier.id,
+                        "label": identifier.label,
+                        "created_at": identifier.created_at
+                    } for identifier in profile.identifiers
+                ]
 
             return UserProfileResponse(
                 id=profile.id,
                 uid=profile.uid,
                 email=profile.email,
                 name=profile.name,
-                has_personal_info=bool(profile.personal_email_hash and profile.phone_hash),
-                custom_identifiers_count=len(profile.custom_identifiers or []),
                 created_at=profile.created_at,
                 updated_at=profile.updated_at,
-                # Do not return unhashed values
-                personal_email=None,
-                phone_number=None,
-                custom_identifiers=custom_identifiers
+                identifiers=identifiers_data,
+                identifiers_count=identifiers_count
+            )
+
+    async def add_identifier(
+        self,
+        uid: str,
+        identifier_data: IdentifierCreate
+    ) -> UserProfileResponse:
+        """
+        Add a new identifier to user profile.
+
+        Args:
+            uid: User's unique identifier
+            identifier_data: Identifier to add
+
+        Returns:
+            UserProfileResponse: Updated profile
+        """
+        logger.info(
+            "Adding identifier to user profile",
+            extra={
+                "user_uid": uid,
+                "label": identifier_data.label,
+                "component": "connect_service"
+            }
+        )
+
+        async with get_db_session() as session:
+            # Get profile
+            query = select(UserProfileORM).where(UserProfileORM.uid == uid)
+            result = await session.execute(query)
+            profile = result.scalars().first()
+
+            if not profile:
+                logger.warning(
+                    "User profile not found",
+                    extra={
+                        "user_uid": uid,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(f"User profile not found for UID: {uid}")
+
+            # Hash the identifier value
+            identifier_hash = self._hash_identifier(identifier_data.value)
+
+            # Create new identifier
+            identifier = IdentifierORM(
+                user_id=profile.id,
+                label=identifier_data.label,
+                identifier_hash=identifier_hash
+            )
+
+            session.add(identifier)
+            await session.commit()
+
+            # Get all identifiers for the user
+            query = select(IdentifierORM).where(
+                IdentifierORM.user_id == profile.id)
+            result = await session.execute(query)
+            identifiers = result.scalars().all()
+
+            # Build response
+            identifiers_data = [
+                {
+                    "id": i.id,
+                    "label": i.label,
+                    "created_at": i.created_at
+                } for i in identifiers
+            ]
+
+            return UserProfileResponse(
+                id=profile.id,
+                uid=profile.uid,
+                email=profile.email,
+                name=profile.name,
+                created_at=profile.created_at,
+                updated_at=profile.updated_at,
+                identifiers=identifiers_data,
+                identifiers_count=len(identifiers)
+            )
+
+    async def delete_identifier(
+        self,
+        uid: str,
+        identifier_id: int
+    ) -> UserProfileResponse:
+        """
+        Delete an identifier from user profile.
+
+        Args:
+            uid: User's unique identifier
+            identifier_id: ID of identifier to delete
+
+        Returns:
+            UserProfileResponse: Updated profile
+        """
+        logger.info(
+            "Deleting identifier from user profile",
+            extra={
+                "user_uid": uid,
+                "identifier_id": identifier_id,
+                "component": "connect_service"
+            }
+        )
+
+        async with get_db_session() as session:
+            # Get profile
+            query = select(UserProfileORM).where(UserProfileORM.uid == uid)
+            result = await session.execute(query)
+            profile = result.scalars().first()
+
+            if not profile:
+                logger.warning(
+                    "User profile not found",
+                    extra={
+                        "user_uid": uid,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(f"User profile not found for UID: {uid}")
+
+            # Check if identifier exists and belongs to this user
+            query = select(IdentifierORM).where(
+                and_(
+                    IdentifierORM.id == identifier_id,
+                    IdentifierORM.user_id == profile.id
+                )
+            )
+            result = await session.execute(query)
+            identifier = result.scalars().first()
+
+            if not identifier:
+                logger.warning(
+                    "Identifier not found or does not belong to user",
+                    extra={
+                        "user_uid": uid,
+                        "identifier_id": identifier_id,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(
+                    f"Identifier not found or does not belong to user")
+
+            # Delete the identifier
+            await session.delete(identifier)
+            await session.commit()
+
+            # Get remaining identifiers
+            query = select(IdentifierORM).where(
+                IdentifierORM.user_id == profile.id)
+            result = await session.execute(query)
+            identifiers = result.scalars().all()
+
+            # Build response
+            identifiers_data = [
+                {
+                    "id": i.id,
+                    "label": i.label,
+                    "created_at": i.created_at
+                } for i in identifiers
+            ]
+
+            return UserProfileResponse(
+                id=profile.id,
+                uid=profile.uid,
+                email=profile.email,
+                name=profile.name,
+                created_at=profile.created_at,
+                updated_at=profile.updated_at,
+                identifiers=identifiers_data,
+                identifiers_count=len(identifiers)
+            )
+
+    async def verify_identifier(
+        self,
+        verification_request: IdentifierVerificationRequest,
+        admin_email: str
+    ) -> IdentifierVerificationResponse:
+        """
+        Verify an identifier for community admins.
+
+        Args:
+            verification_request: Identifier to verify
+            admin_email: Email of admin making the request
+
+        Returns:
+            IdentifierVerificationResponse: Verification result
+        """
+        logger.info(
+            "Verifying identifier",
+            extra={
+                "admin_email": admin_email,
+                "component": "connect_service"
+            }
+        )
+
+        # Check admin permissions
+        is_super_admin = self._is_super_admin(admin_email)
+        is_community_admin = await self._is_community_admin(admin_email)
+
+        if not (is_super_admin or is_community_admin):
+            logger.warning(
+                "Unauthorized identifier verification attempt",
+                extra={
+                    "admin_email": admin_email,
+                    "component": "connect_service"
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can verify identifiers"
+            )
+
+        # Hash the provided identifier
+        identifier_hash = self._hash_identifier(
+            verification_request.identifier)
+
+        async with get_db_session() as session:
+            # Find matching identifier
+            query = select(IdentifierORM).where(
+                IdentifierORM.identifier_hash == identifier_hash
+            ).options(
+                joinedload(IdentifierORM.user_profile)
+            )
+
+            result = await session.execute(query)
+            identifier = result.scalars().first()
+
+            if not identifier:
+                return IdentifierVerificationResponse(
+                    found=False
+                )
+
+            # Get user information
+            user = identifier.user_profile
+
+            return IdentifierVerificationResponse(
+                found=True
+            )
+
+    async def create_community(
+        self,
+        community_data: CommunityCreate,
+        creator_email: str
+    ) -> CommunityResponse:
+        """
+        Create a new community.
+
+        Args:
+            community_data: Community information
+            creator_email: Email of the creator (super admin)
+
+        Returns:
+            CommunityResponse: Created community
+        """
+        logger.info(
+            "Creating new community",
+            extra={
+                "name": community_data.name,
+                "creator_email": creator_email,
+                "component": "connect_service"
+            }
+        )
+
+        # Check if user is super admin
+        if not self._is_super_admin(creator_email):
+            logger.warning(
+                "Unauthorized community creation attempt",
+                extra={
+                    "creator_email": creator_email,
+                    "component": "connect_service"
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only super admins can create communities"
+            )
+
+        async with get_db_session() as session:
+            # Create community
+            community = CommunityORM(
+                name=community_data.name,
+                description=community_data.description,
+                icon=community_data.icon,
+                platform_type=community_data.platform_type,
+                tags=community_data.tags,
+                member_count=community_data.member_count,
+                invite_link=community_data.invite_link,
+                identifier_format_instruction=community_data.identifier_format_instruction
+            )
+
+            session.add(community)
+            await session.commit()
+            await session.refresh(community)
+
+            logger.info(
+                "Community created successfully",
+                extra={
+                    "community_id": community.id,
+                    "name": community.name,
+                    "creator_email": creator_email,
+                    "component": "connect_service"
+                }
+            )
+
+            return CommunityResponse(
+                id=community.id,
+                name=community.name,
+                description=community.description,
+                icon=community.icon,
+                platform_type=community.platform_type,
+                tags=community.tags,
+                member_count=community.member_count,
+                invite_link=community.invite_link,
+                identifier_format_instruction=community.identifier_format_instruction,
+                created_at=community.created_at,
+                updated_at=community.updated_at,
+                user_is_admin=False
+            )
+
+    async def update_community(
+        self,
+        community_id: int,
+        community_data: CommunityUpdate,
+        user_email: str
+    ) -> CommunityResponse:
+        """
+        Update an existing community.
+
+        Args:
+            community_id: ID of community to update
+            community_data: Updated community information
+            user_email: Email of the updater (admin)
+
+        Returns:
+            CommunityResponse: Updated community
+        """
+        logger.info(
+            "Updating community",
+            extra={
+                "community_id": community_id,
+                "user_email": user_email,
+                "component": "connect_service"
+            }
+        )
+
+        # Check if user is super admin or community admin
+        is_super_admin = self._is_super_admin(user_email)
+        is_admin = await self._is_community_admin(user_email, community_id)
+
+        if not (is_super_admin or is_admin):
+            logger.warning(
+                "Unauthorized community update attempt",
+                extra={
+                    "community_id": community_id,
+                    "user_email": user_email,
+                    "component": "connect_service"
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can update communities"
+            )
+
+        async with get_db_session() as session:
+            # Get community
+            query = select(CommunityORM).where(CommunityORM.id == community_id)
+            result = await session.execute(query)
+            community = result.scalars().first()
+
+            if not community:
+                logger.warning(
+                    "Community not found",
+                    extra={
+                        "community_id": community_id,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(
+                    f"Community not found with ID: {community_id}")
+
+            # Update fields
+            if community_data.name is not None:
+                community.name = community_data.name
+            if community_data.description is not None:
+                community.description = community_data.description
+            if community_data.icon is not None:
+                community.icon = community_data.icon
+            if community_data.platform_type is not None:
+                community.platform_type = community_data.platform_type
+            if community_data.tags is not None:
+                community.tags = community_data.tags
+            if community_data.member_count is not None:
+                community.member_count = community_data.member_count
+            if community_data.invite_link is not None:
+                community.invite_link = community_data.invite_link
+            if community_data.identifier_format_instruction is not None:
+                community.identifier_format_instruction = community_data.identifier_format_instruction
+
+            await session.commit()
+            await session.refresh(community)
+
+            logger.info(
+                "Community updated successfully",
+                extra={
+                    "community_id": community.id,
+                    "name": community.name,
+                    "user_email": user_email,
+                    "component": "connect_service"
+                }
+            )
+
+            return CommunityResponse(
+                id=community.id,
+                name=community.name,
+                description=community.description,
+                icon=community.icon,
+                platform_type=community.platform_type,
+                tags=community.tags,
+                member_count=community.member_count,
+                invite_link=community.invite_link,
+                identifier_format_instruction=community.identifier_format_instruction,
+                created_at=community.created_at,
+                updated_at=community.updated_at,
+                user_is_admin=is_admin
+            )
+
+    async def get_community(
+        self,
+        community_id: int,
+        user_email: Optional[str] = None
+    ) -> CommunityResponse:
+        """
+        Get a specific community by ID.
+
+        Args:
+            community_id: ID of community to retrieve
+            user_email: Email of the requester (for admin status)
+
+        Returns:
+            CommunityResponse: Community details
+        """
+        logger.info(
+            "Getting community details",
+            extra={
+                "community_id": community_id,
+                "component": "connect_service"
+            }
+        )
+
+        async with get_db_session() as session:
+            # Get community
+            query = select(CommunityORM).where(CommunityORM.id == community_id)
+            result = await session.execute(query)
+            community = result.scalars().first()
+
+            if not community:
+                logger.warning(
+                    "Community not found",
+                    extra={
+                        "community_id": community_id,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(
+                    f"Community not found with ID: {community_id}")
+
+            # Check if user is admin
+            user_is_admin = False
+            if user_email:
+                user_is_admin = await self._is_community_admin(user_email, community_id)
+
+            return CommunityResponse(
+                id=community.id,
+                name=community.name,
+                description=community.description,
+                icon=community.icon,
+                platform_type=community.platform_type,
+                tags=community.tags,
+                member_count=community.member_count,
+                invite_link=community.invite_link,
+                identifier_format_instruction=community.identifier_format_instruction,
+                created_at=community.created_at,
+                updated_at=community.updated_at,
+                user_is_admin=user_is_admin
             )
 
     async def get_communities(
@@ -310,35 +837,36 @@ class ConnectService:
             List[CommunityResponse]: Filtered and sorted communities
         """
         logger.info(
-            "Fetching communities",
+            "Getting communities list",
             extra={
-                "user_email": user_email,
-                "search": search,
-                "platform_filter": platform_filter,
-                "tag_filter": tag_filter,
-                "sort_by": sort_by,
+                "filters": {
+                    "search": search,
+                    "platform": platform_filter,
+                    "tag": tag_filter,
+                    "sort_by": sort_by
+                },
                 "component": "connect_service"
             }
         )
 
+        # Get admin status for communities
+        user_admin_communities = []
+        is_super_admin = False
+
+        if user_email:
+            user_admin_communities = await self._get_user_admin_communities(user_email)
+
         async with get_db_session() as session:
+            # Build query with filters
             query = select(CommunityORM)
-
-            # Filter inactive communities (unless user is admin)
-            user_is_super_admin = self._is_super_admin(
-                user_email) if user_email else False
-            user_is_community_admin = await self._is_community_admin(user_email) if user_email else False
-
-            if not user_is_super_admin and not user_is_community_admin:
-                query = query.where(CommunityORM.is_active == True)
 
             # Apply search filter
             if search:
-                search_term = f"%{search.lower()}%"
+                search_term = f"%{search}%"
                 query = query.where(
                     or_(
-                        func.lower(CommunityORM.name).like(search_term),
-                        func.lower(CommunityORM.description).like(search_term)
+                        CommunityORM.name.ilike(search_term),
+                        CommunityORM.description.ilike(search_term)
                     )
                 )
 
@@ -347,487 +875,80 @@ class ConnectService:
                 query = query.where(
                     CommunityORM.platform_type == platform_filter)
 
-            # Apply tag filter (PostgreSQL JSON contains operation)
+            # Apply tag filter (more complex due to JSON array)
             if tag_filter:
-                query = query.where(CommunityORM.tags.op('?')(tag_filter))
+                query = query.where(
+                    CommunityORM.tags.contains([tag_filter])
+                )
 
             # Apply sorting
             if sort_by == "member_count":
                 query = query.order_by(CommunityORM.member_count.desc())
             elif sort_by == "created_at":
                 query = query.order_by(CommunityORM.created_at.desc())
-            else:  # default to name
+            else:  # Default to name
                 query = query.order_by(CommunityORM.name)
 
+            # Execute query
             result = await session.execute(query)
             communities = result.scalars().all()
 
-            # Get user profile if email provided
-            user_profile = None
-            if user_email:
-                user_query = select(UserProfileORM).where(
-                    UserProfileORM.email == user_email)
-                user_result = await session.execute(user_query)
-                user_profile = user_result.scalar_one_or_none()
-
-            # Convert to response format
-            responses = []
+            # Build response
+            community_responses = []
             for community in communities:
                 # Check if user is admin for this community
-                user_is_admin = False
-                if user_email:
-                    user_is_admin = (user_is_super_admin or
-                                     await self._is_community_admin(user_email, community.id))
+                user_is_admin = community.id in user_admin_communities
 
-                # Check if user has pending join request
-                join_request_exists = False
-                if user_profile:
-                    join_query = select(JoinRequestORM).where(
-                        and_(
-                            JoinRequestORM.community_id == community.id,
-                            JoinRequestORM.user_uid == user_profile.uid
-                        )
-                    )
-                    join_result = await session.execute(join_query)
-                    join_request_exists = join_result.scalar_one_or_none() is not None
-
-                responses.append(CommunityResponse(
-                    id=community.id,
-                    name=community.name,
-                    description=community.description,
-                    icon=community.icon,
-                    platform_type=community.platform_type,
-                    tags=community.tags or [],
-                    member_count=community.member_count,
-                    invite_link=community.invite_link if user_is_admin else None,
-                    identifier_format_instruction=community.identifier_format_instruction,
-                    is_active=community.is_active,
-                    created_at=community.created_at,
-                    updated_at=community.updated_at,
-                    user_is_admin=user_is_admin,
-                    join_request_exists=join_request_exists
-                ))
-
-        return responses
-
-    async def create_community(
-        self,
-        community_data: CommunityCreate,
-        creator_email: str
-    ) -> CommunityResponse:
-        """
-        Create a new community (super admin only).
-
-        Args:
-            community_data: Community creation data
-            creator_email: Email of the creator
-
-        Returns:
-            CommunityResponse: Created community
-
-        Raises:
-            HTTPException: If user is not super admin
-        """
-        if not self._is_super_admin(creator_email):
-            logger.warning(
-                "Unauthorized community creation attempt",
-                extra={
-                    "email_id": creator_email,
-                    "component": "connect_service"
-                }
-            )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only super admins can create communities"
-            )
-
-        logger.info(
-            "Creating new community",
-            extra={
-                "community_name": community_data.name,
-                "creator_email": creator_email,
-                "email_id": creator_email,
-                "component": "connect_service"
-            }
-        )
-
-        async with get_db_session() as session:
-            # Create community
-            community = CommunityORM(
-                name=community_data.name,
-                description=community_data.description,
-                icon=community_data.icon,
-                platform_type=community_data.platform_type.value,
-                tags=community_data.tags,
-                member_count=community_data.member_count,
-                invite_link=community_data.invite_link,
-                identifier_format_instruction=community_data.identifier_format_instruction,
-                is_active=True
-            )
-
-            session.add(community)
-            await session.commit()
-            await session.refresh(community)
-
-            logger.info(
-                "Community created successfully",
-                extra={
-                    "community_id": community.id,
-                    "community_name": community.name,
-                    "creator_email": creator_email,
-                    "email_id": creator_email,
-                    "component": "connect_service"
-                }
-            )
-
-            return CommunityResponse(
-                id=community.id,
-                name=community.name,
-                description=community.description,
-                icon=community.icon,
-                platform_type=community.platform_type,
-                tags=community.tags or [],
-                member_count=community.member_count,
-                invite_link=community.invite_link,
-                identifier_format_instruction=community.identifier_format_instruction,
-                is_active=community.is_active,
-                created_at=community.created_at,
-                updated_at=community.updated_at,
-                user_is_admin=True
-            )
-
-    async def update_community(
-        self,
-        community_id: int,
-        update_data: CommunityUpdate,
-        user_email: str
-    ) -> CommunityResponse:
-        """
-        Update community information.
-
-        Args:
-            community_id: Community ID to update
-            update_data: Update data
-            user_email: Email of the user making the update
-
-        Returns:
-            CommunityResponse: Updated community
-
-        Raises:
-            HTTPException: If user is not authorized or community not found
-        """
-        async with get_db_session() as session:
-            community = await session.execute(
-                select(CommunityORM).where(CommunityORM.id == community_id)
-            )
-            community = community.scalar_one_or_none()
-
-            if not community:
-                raise NotFoundError("Community not found")
-
-            # Check permissions
-            user_is_super_admin = self._is_super_admin(user_email)
-            user_is_community_admin = await self._is_community_admin(user_email, community_id)
-
-            if not (user_is_super_admin or user_is_community_admin):
-                logger.warning(
-                    "Unauthorized community update attempt",
-                    extra={
-                        "community_id": community_id,
-                        "email_id": user_email,
-                        "component": "connect_service"
-                    }
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Not authorized to update this community"
-                )
-
-            logger.info(
-                "Updating community",
-                extra={
-                    "community_id": community_id,
-                    "email_id": user_email,
-                    "component": "connect_service"
-                }
-            )
-
-            # Update fields
-            update_dict = update_data.dict(exclude_unset=True)
-            for field, value in update_dict.items():
-                if hasattr(community, field):
-                    if field == "platform_type" and hasattr(value, "value"):
-                        setattr(community, field, value.value)
-                    else:
-                        setattr(community, field, value)
-
-            community.updated_at = datetime.utcnow()
-
-            await session.commit()
-            await session.refresh(community)
-
-            logger.info(
-                "Community updated successfully",
-                extra={
-                    "community_id": community_id,
-                    "email_id": user_email,
-                    "component": "connect_service"
-                }
-            )
-
-            return CommunityResponse(
-                id=community.id,
-                name=community.name,
-                description=community.description,
-                icon=community.icon,
-                platform_type=community.platform_type,
-                tags=community.tags or [],
-                member_count=community.member_count,
-                invite_link=community.invite_link,
-                identifier_format_instruction=community.identifier_format_instruction,
-                is_active=community.is_active,
-                created_at=community.created_at,
-                updated_at=community.updated_at,
-                user_is_admin=True
-            )
-
-    async def create_join_request(
-        self,
-        request_data: JoinRequestCreate,
-        user_uid: str,
-        user_email: str
-    ) -> JoinRequestResponse:
-        """
-        Create a join request for a community.
-
-        Args:
-            request_data: Join request data
-            user_uid: User's UID
-            user_email: User's email
-
-        Returns:
-            JoinRequestResponse: Created join request
-        """
-        async with get_db_session() as session:
-            # Check if community exists
-            community = await session.execute(
-                select(CommunityORM).where(
-                    CommunityORM.id == request_data.community_id)
-            )
-            community = community.scalar_one_or_none()
-
-            if not community:
-                raise NotFoundError("Community not found")
-
-            # Check if user profile exists
-            user_profile = await session.execute(
-                select(UserProfileORM).where(UserProfileORM.uid == user_uid)
-            )
-            user_profile = user_profile.scalar_one_or_none()
-
-            if not user_profile:
-                raise ValidationError(
-                    "User profile not found. Please complete profile setup first.")
-
-            # Check if user already has a pending request
-            existing_request = await session.execute(
-                select(JoinRequestORM).where(
-                    and_(
-                        JoinRequestORM.community_id == request_data.community_id,
-                        JoinRequestORM.user_uid == user_uid
+                community_responses.append(
+                    CommunityResponse(
+                        id=community.id,
+                        name=community.name,
+                        description=community.description,
+                        icon=community.icon,
+                        platform_type=community.platform_type,
+                        tags=community.tags,
+                        member_count=community.member_count,
+                        invite_link=community.invite_link,
+                        identifier_format_instruction=community.identifier_format_instruction,
+                        created_at=community.created_at,
+                        updated_at=community.updated_at,
+                        user_is_admin=user_is_admin
                     )
                 )
-            )
-            existing_request = existing_request.scalar_one_or_none()
 
-            if existing_request:
-                raise ValidationError(
-                    "You already have a pending request for this community")
+            return community_responses
 
-            logger.info(
-                "Creating join request",
-                extra={
-                    "community_id": request_data.community_id,
-                    "user_uid": user_uid,
-                    "email_id": user_email,
-                    "identifier_type": request_data.identifier_type,
-                    "component": "connect_service"
-                }
-            )
-
-            # Get the identifier hash based on type
-            identifier_hash = None
-
-            if request_data.identifier_type == "email":
-                identifier_hash = user_profile.personal_email_hash
-            elif request_data.identifier_type == "phone":
-                identifier_hash = user_profile.phone_hash
-            elif request_data.identifier_type == "custom":
-                # Hash the custom identifier and add to user profile
-                custom_hash = self._hash_identifier(
-                    request_data.identifier_value)
-
-                # Add to user's custom identifiers
-                custom_identifiers = user_profile.custom_identifiers or []
-                custom_identifier = {
-                    "name": request_data.identifier_name,
-                    "hash": custom_hash
-                }
-                custom_identifiers.append(custom_identifier)
-                user_profile.custom_identifiers = custom_identifiers
-                user_profile.updated_at = datetime.utcnow()
-
-                identifier_hash = custom_hash
-
-            if not identifier_hash:
-                raise ValidationError("Unable to generate identifier hash")
-
-            # Create join request
-            join_request = JoinRequestORM(
-                community_id=request_data.community_id,
-                user_uid=user_uid,
-                user_email=user_email,
-                identifier_hash=identifier_hash,
-                status="pending"
-            )
-
-            session.add(join_request)
-            await session.commit()
-            await session.refresh(join_request)
-
-            logger.info(
-                "Join request created successfully",
-                extra={
-                    "request_id": join_request.id,
-                    "community_id": request_data.community_id,
-                    "user_uid": user_uid,
-                    "email_id": user_email,
-                    "component": "connect_service"
-                }
-            )
-
-            return JoinRequestResponse(
-                id=join_request.id,
-                community_id=join_request.community_id,
-                user_uid=join_request.user_uid,
-                user_email=join_request.user_email,
-                status=join_request.status,
-                created_at=join_request.created_at,
-                community_name=community.name
-            )
-
-    async def verify_identifier(
-        self,
-        community_id: int,
-        identifier: str,
-        admin_email: str
-    ) -> IdentifierVerificationResponse:
-        """
-        Verify if a user has submitted a join request with given identifier.
-
-        Args:
-            community_id: Community ID to check
-            identifier: Identifier to verify
-            admin_email: Admin email making the request
-
-        Returns:
-            IdentifierVerificationResponse: Verification result
-        """
-        # Check permissions
-        user_is_super_admin = self._is_super_admin(admin_email)
-        user_is_community_admin = await self._is_community_admin(admin_email, community_id)
-
-        if not (user_is_super_admin or user_is_community_admin):
-            logger.warning(
-                "Unauthorized identifier verification attempt",
-                extra={
-                    "community_id": community_id,
-                    "email_id": admin_email,
-                    "component": "connect_service"
-                }
-            )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to verify identifiers for this community"
-            )
-
-        logger.info(
-            "Verifying identifier",
-            extra={
-                "community_id": community_id,
-                "email_id": admin_email,
-                "component": "connect_service"
-            }
-        )
-
-        # Hash the provided identifier
-        identifier_hash = self._hash_identifier(identifier)
-
-        async with get_db_session() as session:
-            # Search for matching join request with user profile
-            join_request = await session.execute(
-                select(JoinRequestORM, UserProfileORM)
-                .join(UserProfileORM, JoinRequestORM.user_uid == UserProfileORM.uid)
-                .where(
-                    and_(
-                        JoinRequestORM.community_id == community_id,
-                        JoinRequestORM.identifier_hash == identifier_hash
-                    )
-                )
-            )
-            result = join_request.first()
-
-            if result:
-                join_request_obj, user_profile = result
-
-                logger.info(
-                    "Identifier verification successful",
-                    extra={
-                        "community_id": community_id,
-                        "found_user_email": join_request_obj.user_email,
-                        "email_id": admin_email,
-                        "component": "connect_service"
-                    }
-                )
-
-                return IdentifierVerificationResponse(
-                    found=True,
-                    user_email=join_request_obj.user_email,
-                    user_name=user_profile.name,
-                    request_date=join_request_obj.created_at
-                )
-
-        logger.info(
-            "Identifier verification - not found",
-            extra={
-                "community_id": community_id,
-                "email_id": admin_email,
-                "component": "connect_service"
-            }
-        )
-
-        return IdentifierVerificationResponse(found=False)
-
-    async def create_community_admin(
+    async def add_community_admin(
         self,
         admin_data: CommunityAdminCreate,
         assigner_email: str
     ) -> CommunityAdmin:
         """
-        Create a community admin (super admin only).
+        Add a new admin to a community.
 
         Args:
-            admin_data: Admin creation data
-            assigner_email: Email of the super admin assigning the role
+            admin_data: Admin information
+            assigner_email: Email of the super admin making the assignment
 
         Returns:
-            CommunityAdmin: Created admin record
+            CommunityAdmin: Created admin
         """
+        logger.info(
+            "Adding community admin",
+            extra={
+                "community_id": admin_data.community_id,
+                "admin_email": admin_data.admin_email,
+                "assigner_email": assigner_email,
+                "component": "connect_service"
+            }
+        )
+
+        # Check if assigner is super admin
         if not self._is_super_admin(assigner_email):
             logger.warning(
-                "Unauthorized community admin creation attempt",
+                "Unauthorized admin assignment attempt",
                 extra={
-                    "email_id": assigner_email,
+                    "assigner_email": assigner_email,
                     "component": "connect_service"
                 }
             )
@@ -838,27 +959,45 @@ class ConnectService:
 
         async with get_db_session() as session:
             # Check if community exists
-            community = await session.execute(
-                select(CommunityORM).where(
-                    CommunityORM.id == admin_data.community_id)
-            )
-            community = community.scalar_one_or_none()
+            query = select(CommunityORM).where(
+                CommunityORM.id == admin_data.community_id)
+            result = await session.execute(query)
+            community = result.scalars().first()
 
             if not community:
-                raise NotFoundError("Community not found")
+                logger.warning(
+                    "Community not found",
+                    extra={
+                        "community_id": admin_data.community_id,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(
+                    f"Community not found with ID: {admin_data.community_id}")
 
-            logger.info(
-                "Creating community admin",
-                extra={
-                    "community_id": admin_data.community_id,
-                    "admin_email": admin_data.admin_email,
-                    "assigner_email": assigner_email,
-                    "email_id": assigner_email,
-                    "component": "connect_service"
-                }
+            # Check if admin already exists
+            query = select(CommunityAdminORM).where(
+                and_(
+                    CommunityAdminORM.community_id == admin_data.community_id,
+                    CommunityAdminORM.admin_email == admin_data.admin_email
+                )
             )
+            result = await session.execute(query)
+            existing_admin = result.scalars().first()
 
-            # Create admin record
+            if existing_admin:
+                logger.warning(
+                    "Admin already exists for this community",
+                    extra={
+                        "community_id": admin_data.community_id,
+                        "admin_email": admin_data.admin_email,
+                        "component": "connect_service"
+                    }
+                )
+                raise ValidationError(
+                    "This user is already an admin for this community")
+
+            # Create new admin
             admin = CommunityAdminORM(
                 community_id=admin_data.community_id,
                 admin_email=admin_data.admin_email,
@@ -871,13 +1010,11 @@ class ConnectService:
             await session.refresh(admin)
 
             logger.info(
-                "Community admin created successfully",
+                "Community admin added successfully",
                 extra={
                     "admin_id": admin.id,
-                    "community_id": admin_data.community_id,
-                    "admin_email": admin_data.admin_email,
-                    "assigner_email": assigner_email,
-                    "email_id": assigner_email,
+                    "community_id": admin.community_id,
+                    "admin_email": admin.admin_email,
                     "component": "connect_service"
                 }
             )
@@ -891,141 +1028,36 @@ class ConnectService:
                 created_at=admin.created_at
             )
 
-    async def get_user_admin_communities(self, user_email: str) -> List[CommunityResponse]:
+    async def remove_community_admin(
+        self,
+        admin_id: int,
+        remover_email: str
+    ) -> None:
         """
-        Get communities that user is admin for.
+        Remove an admin from a community.
 
         Args:
-            user_email: User's email address
+            admin_id: ID of admin to remove
+            remover_email: Email of the super admin removing the assignment
 
         Returns:
-            List[CommunityResponse]: Communities user can admin
+            None
         """
-        async with get_db_session() as session:
-            if self._is_super_admin(user_email):
-                # Super admin can see all communities
-                query = select(CommunityORM)
-            else:
-                # Regular admin can only see communities they admin
-                query = (
-                    select(CommunityORM)
-                    .join(CommunityAdminORM)
-                    .where(CommunityAdminORM.admin_email == user_email)
-                )
+        logger.info(
+            "Removing community admin",
+            extra={
+                "admin_id": admin_id,
+                "remover_email": remover_email,
+                "component": "connect_service"
+            }
+        )
 
-            result = await session.execute(query)
-            communities = result.scalars().all()
-
-            return [
-                CommunityResponse(
-                    id=community.id,
-                    name=community.name,
-                    description=community.description,
-                    icon=community.icon,
-                    platform_type=community.platform_type,
-                    tags=community.tags or [],
-                    member_count=community.member_count,
-                    invite_link=community.invite_link,
-                    identifier_format_instruction=community.identifier_format_instruction,
-                    is_active=community.is_active,
-                    created_at=community.created_at,
-                    updated_at=community.updated_at,
-                    user_is_admin=True
-                )
-                for community in communities
-            ]
-
-    async def get_user_roles(self, user_email: str) -> Dict[str, Any]:
-        """
-        Get user roles (super admin, community admin).
-
-        Args:
-            user_email: User's email address
-
-        Returns:
-            Dict[str, Any]: Role information
-        """
-        is_super_admin = self._is_super_admin(user_email)
-        is_community_admin = await self._is_community_admin(user_email)
-        admin_communities = await self._get_user_admin_communities(user_email) if is_community_admin else []
-        
-        return {
-            "is_super_admin": is_super_admin,
-            "is_community_admin": is_community_admin,
-            "admin_communities": admin_communities
-        }
-
-    async def get_community_admins(self, community_id: int, requester_email: str) -> List[Dict[str, Any]]:
-        """
-        Get list of admins for a specific community (super admin only).
-        
-        Args:
-            community_id: Community ID
-            requester_email: Email of the requester
-            
-        Returns:
-            List[Dict[str, Any]]: List of community admins
-        """
-        if not self._is_super_admin(requester_email):
+        # Check if remover is super admin
+        if not self._is_super_admin(remover_email):
             logger.warning(
-                "Unauthorized attempt to get community admins",
+                "Unauthorized admin removal attempt",
                 extra={
-                    "community_id": community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only super admins can view community admins"
-            )
-        
-        async with get_db_session() as session:
-            # Check if community exists
-            community = await session.execute(
-                select(CommunityORM).where(CommunityORM.id == community_id)
-            )
-            community = community.scalar_one_or_none()
-            
-            if not community:
-                raise NotFoundError("Community not found")
-            
-            # Get admins
-            admins_query = select(CommunityAdminORM).where(
-                CommunityAdminORM.community_id == community_id
-            ).order_by(CommunityAdminORM.created_at.desc())
-            
-            result = await session.execute(admins_query)
-            admins = result.scalars().all()
-            
-            return [
-                {
-                    "id": admin.id,
-                    "admin_email": admin.admin_email,
-                    "admin_name": admin.admin_name,
-                    "assigned_by": admin.assigned_by,
-                    "created_at": admin.created_at
-                }
-                for admin in admins
-            ]
-    
-    async def remove_community_admin(self, admin_id: int, requester_email: str) -> bool:
-        """
-        Remove a community admin (super admin only).
-        
-        Args:
-            admin_id: Admin record ID to remove
-            requester_email: Email of the requester
-            
-        Returns:
-            bool: True if successfully removed
-        """
-        if not self._is_super_admin(requester_email):
-            logger.warning(
-                "Unauthorized attempt to remove community admin",
-                extra={
-                    "admin_id": admin_id,
-                    "email_id": requester_email,
+                    "remover_email": remover_email,
                     "component": "connect_service"
                 }
             )
@@ -1033,96 +1065,95 @@ class ConnectService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only super admins can remove community admins"
             )
-        
+
         async with get_db_session() as session:
-            # Find the admin record
-            admin = await session.execute(
-                select(CommunityAdminORM).where(CommunityAdminORM.id == admin_id)
-            )
-            admin = admin.scalar_one_or_none()
-            
+            # Get admin
+            query = select(CommunityAdminORM).where(
+                CommunityAdminORM.id == admin_id)
+            result = await session.execute(query)
+            admin = result.scalars().first()
+
             if not admin:
-                raise NotFoundError("Admin record not found")
-            
-            logger.info(
-                "Removing community admin",
-                extra={
-                    "admin_id": admin_id,
-                    "admin_email": admin.admin_email,
-                    "community_id": admin.community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-            
+                logger.warning(
+                    "Admin not found",
+                    extra={
+                        "admin_id": admin_id,
+                        "component": "connect_service"
+                    }
+                )
+                raise NotFoundError(f"Admin not found with ID: {admin_id}")
+
+            # Delete admin
             await session.delete(admin)
             await session.commit()
-            
+
             logger.info(
                 "Community admin removed successfully",
                 extra={
                     "admin_id": admin_id,
+                    "community_id": admin.community_id,
                     "admin_email": admin.admin_email,
-                    "email_id": requester_email,
                     "component": "connect_service"
                 }
             )
-            
-            return True
 
-    async def delete_community(self, community_id: int, requester_email: str) -> bool:
+    async def get_community_admins(
+        self,
+        community_id: int,
+        user_email: str
+    ) -> List[CommunityAdmin]:
         """
-        Delete a community (super admin only).
+        Get list of admins for a community.
 
         Args:
-            community_id: ID of the community to delete
-            requester_email: Email of the requester
+            community_id: ID of community
+            user_email: Email of the requester (for permission check)
 
         Returns:
-            bool: True if successfully deleted
+            List[CommunityAdmin]: List of community admins
         """
-        if not self._is_super_admin(requester_email):
+        logger.info(
+            "Getting community admins",
+            extra={
+                "community_id": community_id,
+                "component": "connect_service"
+            }
+        )
+
+        # Check if user is super admin or community admin
+        is_super_admin = self._is_super_admin(user_email)
+        is_admin = await self._is_community_admin(user_email, community_id)
+
+        if not (is_super_admin or is_admin):
             logger.warning(
-                "Unauthorized attempt to delete community",
+                "Unauthorized attempt to view community admins",
                 extra={
                     "community_id": community_id,
-                    "email_id": requester_email,
+                    "user_email": user_email,
                     "component": "connect_service"
                 }
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only super admins can delete communities"
+                detail="Only admins can view community admins"
             )
 
         async with get_db_session() as session:
-            # Find the community
-            community = await session.execute(
-                select(CommunityORM).where(CommunityORM.id == community_id)
-            )
-            community = community.scalar_one_or_none()
+            # Get admins
+            query = select(CommunityAdminORM).where(
+                CommunityAdminORM.community_id == community_id
+            ).order_by(CommunityAdminORM.created_at)
 
-            if not community:
-                return False
+            result = await session.execute(query)
+            admins = result.scalars().all()
 
-            logger.info(
-                "Deleting community",
-                extra={
-                    "community_id": community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-
-            await session.delete(community)
-            await session.commit()
-
-            logger.info(
-                "Community deleted successfully",
-                extra={
-                    "community_id": community_id,
-                    "email_id": requester_email,
-                    "component": "connect_service"
-                }
-            )
-            return True
+            return [
+                CommunityAdmin(
+                    id=admin.id,
+                    community_id=admin.community_id,
+                    admin_email=admin.admin_email,
+                    admin_name=admin.admin_name,
+                    assigned_by=admin.assigned_by,
+                    created_at=admin.created_at
+                ) for admin in admins
+            ]

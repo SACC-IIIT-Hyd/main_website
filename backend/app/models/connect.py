@@ -21,8 +21,8 @@ from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field, validator
 from enum import Enum
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -46,76 +46,87 @@ class UserProfileORM(Base):
     """SQLAlchemy ORM model for user profiles."""
     __tablename__ = "user_profiles"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    uid = Column(String(100), unique=True, nullable=False, index=True)
-    email = Column(String(100), nullable=False, index=True)
-    name = Column(String(200), nullable=False)
-
-    created_at = Column(DateTime(timezone=True),
-                        server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(
-    ), onupdate=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, autoincrement=True)
+    uid: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(
+        timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Relationships
-    identifiers = relationship("IdentifierORM", back_populates="user_profile")
+    identifiers: Mapped[List["IdentifierORM"]] = relationship(
+        "IdentifierORM", back_populates="user_profile")
 
 
 class IdentifierORM(Base):
     """SQLAlchemy ORM model for user identifiers."""
     __tablename__ = "identifiers"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("user_profiles.id"),
-                     nullable=False, index=True)
-    label = Column(String(100), nullable=False)
-    identifier_hash = Column(String(255), nullable=False, index=True)
-
-    created_at = Column(DateTime(timezone=True),
-                        server_default=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(
+        "user_profiles.id"), nullable=False, index=True)
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    identifier_hash: Mapped[str] = mapped_column(
+        String(255), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    user_profile = relationship("UserProfileORM", back_populates="identifiers")
+    user_profile: Mapped["UserProfileORM"] = relationship(
+        "UserProfileORM", back_populates="identifiers")
 
 
 class CommunityORM(Base):
     """SQLAlchemy ORM model for communities."""
     __tablename__ = "communities"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String(100), nullable=False, index=True)
-    description = Column(String(500), nullable=False)
-    icon = Column(String(1), nullable=True)
-    platform_type = Column(String(50), nullable=False, index=True)
-    tags = Column(JSON, default=list, nullable=False)
-    member_count = Column(Integer, default=0, nullable=False)
-    invite_link = Column(String(500), nullable=True)
-    identifier_format_instruction = Column(Text, nullable=False)
-
-    created_at = Column(DateTime(timezone=True),
-                        server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(
-    ), onupdate=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    icon: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
+    platform_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True)
+    tags: Mapped[List[str]] = mapped_column(JSON, default=list, nullable=False)
+    member_count: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False)
+    invite_link: Mapped[Optional[str]] = mapped_column(
+        String(500), nullable=True)
+    identifier_format_instruction: Mapped[str] = mapped_column(
+        Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(
+        timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Relationships
-    admins = relationship("CommunityAdminORM", back_populates="community")
+    admins: Mapped[List["CommunityAdminORM"]] = relationship(
+        "CommunityAdminORM", back_populates="community")
 
 
 class CommunityAdminORM(Base):
     """SQLAlchemy ORM model for community admins."""
     __tablename__ = "community_admins"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    community_id = Column(Integer, ForeignKey(
-        "communities.id"), nullable=False, index=True)
-    admin_email = Column(String(100), nullable=False, index=True)
-    admin_name = Column(String(200), nullable=False)
-    assigned_by = Column(String(100), nullable=False)
-
-    created_at = Column(DateTime(timezone=True),
-                        server_default=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, autoincrement=True)
+    community_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("communities.id"), nullable=False, index=True)
+    admin_email: Mapped[str] = mapped_column(
+        String(100), nullable=False, index=True)
+    admin_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    assigned_by: Mapped[str] = mapped_column(String(100), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    community = relationship("CommunityORM", back_populates="admins")
+    community: Mapped["CommunityORM"] = relationship(
+        "CommunityORM", back_populates="admins")
 
 
 # Pydantic Models
@@ -278,7 +289,6 @@ class CommunityUpdate(BaseModel):
     identifier_format_instruction: Optional[str] = Field(
         None, max_length=1000, min_length=10)
     icon: Optional[str] = Field(None, max_length=1)
-    is_active: Optional[bool] = None
 
 
 class CommunityAdminCreate(BaseModel):
@@ -300,7 +310,6 @@ class CommunityResponse(BaseModel):
     member_count: int
     invite_link: Optional[str]
     identifier_format_instruction: str
-    is_active: bool
     created_at: datetime
     updated_at: Optional[datetime]
 
