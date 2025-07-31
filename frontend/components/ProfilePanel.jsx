@@ -3,6 +3,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Trash2, Plus } from 'lucide-react';
 
+import '@/styles/ProfilePanel.scss';
+
 const ProfilePanel = ({ userProfile, onDeleteIdentifier, onClose }) => {
     const [showConfirm, setShowConfirm] = useState(null);
 
@@ -24,9 +26,9 @@ const ProfilePanel = ({ userProfile, onDeleteIdentifier, onClose }) => {
             <div className="profile-panel-modal">
                 <Card>
                     <CardHeader>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <CardTitle>My Identifiers</CardTitle>
-                            <Button variant="ghost" onClick={onClose}><X size={20} /></Button>
+                        <div className="panel-header">
+                            <span className="panel-title"><CardTitle>My Identifiers</CardTitle></span>
+                            <Button variant="ghost" onClick={onClose} className="close-button"><X size={20} /></Button>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -38,7 +40,7 @@ const ProfilePanel = ({ userProfile, onDeleteIdentifier, onClose }) => {
                                     <li key={idx} className="identifier-item">
                                         <span className="identifier-type">{id.type}:</span>
                                         <span className="identifier-value">{id.value}</span>
-                                        <Button variant="outline" size="icon" onClick={() => setShowConfirm(idx)} style={{ marginLeft: 8 }}>
+                                        <Button variant="outline" size="icon" onClick={() => setShowConfirm(idx)} className="delete-identifier-btn">
                                             <Trash2 size={16} />
                                         </Button>
                                         {showConfirm === idx && (
