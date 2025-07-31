@@ -29,6 +29,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import NullPool
+from sqlalchemy import text
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
@@ -196,7 +197,8 @@ async def check_database_connection() -> bool:
     try:
         async with get_db_session() as session:
             # Execute a simple query to test connection
-            result = await session.execute("SELECT 1")
+            result = await session.execute(text("SELECT 1"))
+            result.fetchone()
             result.fetchone()
 
         logger.info("Database connection check successful")
