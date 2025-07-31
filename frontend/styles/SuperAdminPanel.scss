@@ -17,8 +17,6 @@
 
 /* Super Admin Panel Specific Styles */
 .super-admin-panel {
-  /* Removed fixed positioning to make it static */
-  background: rgba(31, 18, 26, 0.95);
   backdrop-filter: blur(15px);
   display: flex;
   align-items: center;

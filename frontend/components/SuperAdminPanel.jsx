@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Users, Settings, Trash2, Edit, X, MessageSquare, Phone, Briefcase, Send, Linkedin, Globe } from 'lucide-react';
+import { Plus, Users, Trash2, Edit, X, MessageSquare, Phone, Briefcase, Send, Linkedin, Globe } from 'lucide-react';
 import '@/styles/SuperAdminPanel.scss';
 
 const SuperAdminPanel = ({ onClose }) => {

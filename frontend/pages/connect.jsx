@@ -196,55 +196,66 @@ const ConnectPage = () => {
     return (
       <div className="connect-page">
         <NavbarComponent isSticky={true} />
-        <div className="">
-          <Card className="setup-card">
-            <CardHeader className="setup-header">
-              <CardTitle>Welcome to Connect!</CardTitle>
-              <CardDescription>
-                Discover and join IIITH alumni communities across Discord, WhatsApp, Teams, Slack, and more.
-                To get started, please provide your personal contact information for verification purposes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleProfileSetup} className="setup-form">
-                <div className="privacy-notice">
-                  <p>
-                    <strong>Privacy Notice:</strong> Your personal email and phone number will be hashed and stored securely.
-                    Even we cannot retrieve your original information. This is only used to verify the authenticity of community join requests.
-                  </p>
-                </div>
+        <div className="main-content">
+          {/* Page Header */}
+          <div className="header-container">
+            <div className="header-title">
+              <h1 className="title">Alumni Communities</h1>
+              <p className="subtitle">Connect with fellow IIITH alumni across various platforms</p>
+            </div>
+          </div>
 
-                <div className="form-group">
-                  <label className="form-label">Personal Email Address</label>
-                  <Input
-                    type="email"
-                    value={profileData.personal_email}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, personal_email: e.target.value }))}
-                    placeholder="your.personal@email.com"
-                    required
-                    className="form-input"
-                  />
-                </div>
+          {/* Profile Setup Card */}
+          <div className="profile-setup-containerr">
+            <Card className="setup-card">
+              <CardHeader className="setup-header">
+                <CardTitle className="card-title">Welcome to Connect!</CardTitle>
+                <CardDescription className="card-description">
+                  To get started, please provide your personal contact information for verification purposes.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleProfileSetup} className="setup-form space-y-6">
+                  <div className="privacy-notice">
+                    <p className="">
+                      <strong>Privacy Notice:</strong> Your personal email and phone number will be hashed and stored securely.<br />
+                      Even we cannot retrieve your original information. <br />This is only used to verify the authenticity of community join requests.
+                    </p>
+                  </div>
 
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <Input
-                    type="tel"
-                    value={profileData.phone_number}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, phone_number: e.target.value }))}
-                    placeholder="+91 98765 43210"
-                    required
-                    className="form-input"
-                  />
-                </div>
+                  <div className="form-group">
+                    <label className="form-label block mb-1 font-medium">Personal Email Address</label>
+                    <Input
+                      type="email"
+                      value={profileData.personal_email}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, personal_email: e.target.value }))}
+                      placeholder="your.personal@email.com"
+                      required
+                      className="form-input w-full"
+                    />
+                  </div>
 
-                <Button type="submit" className="setup-button">
-                  Complete Setup
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                  <div className="form-group mb-6">
+                    <label className="form-label block mb-1 font-medium">Phone Number</label>
+                    <Input
+                      type="tel"
+                      value={profileData.phone_number}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, phone_number: e.target.value }))}
+                      placeholder="+91 98765 43210"
+                      required
+                      className="form-input w-full"
+                    />
+                  </div>
+
+                  <Button type="submit" className="setup-button w-full">
+                    Complete Setup
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+        <Bottom />
       </div>
     );
   }
@@ -260,40 +271,40 @@ const ConnectPage = () => {
             <h1 className="title">Alumni Communities</h1>
             <p className="subtitle">Connect with fellow IIITH alumni across various platforms</p>
           </div>
+        </div>
 
-          {/* Admin Buttons */}
-          <div className="admin-buttons-container">
-            {userRoles.is_community_admin && (
-              <Button
-                className="admin-btn community-admin-btn"
-                onClick={() => setShowCommunityAdminPanel(true)}
-                title="Community Admin Panel"
-              >
-                <Settings className="icon" />
-                <span className="btn-text">Community Admin</span>
-              </Button>
-            )}
-            {userRoles.is_super_admin && (
-              <Button
-                className="admin-btn super-admin-btn"
-                onClick={() => setShowSuperAdminPanel(true)}
-                title="Super Admin Panel"
-              >
-                <Plus className="icon" />
-                <span className="btn-text">Super Admin</span>
-              </Button>
-            )}
-          </div>
-
-          {/* Admin Panels */}
-          {showSuperAdminPanel && (
-            <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
+        {/* Admin Buttons */}
+        <div className="admin-buttons-row">
+          {userRoles.is_community_admin && (
+            <Button
+              className="admin-btn community-admin-btn"
+              onClick={() => setShowCommunityAdminPanel(true)}
+              title="Community Admin Panel"
+            >
+              <Settings className="icon" />
+              <span className="btn-text">Community Admin</span>
+            </Button>
           )}
-
-          {showCommunityAdminPanel && (
-            <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
+          {userRoles.is_super_admin && (
+            <Button
+              className="admin-btn super-admin-btn"
+              onClick={() => setShowSuperAdminPanel(true)}
+              title="Super Admin Panel"
+            >
+              <Plus className="icon" />
+              <span className="btn-text">Super Admin</span>
+            </Button>
           )}
         </div>
+
+        {/* Admin Panels */}
+        {showSuperAdminPanel && (
+          <SuperAdminPanel onClose={() => setShowSuperAdminPanel(false)} />
+        )}
+
+        {showCommunityAdminPanel && (
+          <CommunityAdminPanel onClose={() => setShowCommunityAdminPanel(false)} />
+        )}
 
         {/* Search and Filters */}
         <div className="search-filter-container">

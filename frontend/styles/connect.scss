@@ -1,3 +1,28 @@
+/* Admin Buttons Row - below subtitle, center aligned */
+.admin-buttons-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .admin-buttons-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    align-items: center;
+  }
+
+  .admin-buttons-row .admin-btn {
+    width: 100%;
+    max-width: 250px;
+    justify-content: center;
+  }
+}
+
 /* Force override for custom-identifier-input in Join Community Panel */
 .drawer-content .custom-identifier-input {
   background: rgba(31, 18, 26, 0.8) !important;
@@ -831,8 +856,6 @@
 /* Base Panel Styles */
 .community-admin-panel,
 .super-admin-panel {
-  /* Removed fixed positioning to make it static */
-  background: rgba(31, 18, 26, 0.95);
   backdrop-filter: blur(15px);
   z-index: 1000;
   display: flex;
@@ -1683,7 +1706,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(15px);
   z-index: 2000;
   display: flex;
@@ -1966,5 +1988,165 @@
     background: #6b7280;
     box-shadow: none;
     transform: none;
+  }
+}
+/* Profile Setup Section Styles */
+.profile-setup-container {
+  width: 100%;
+  padding: 2rem 0;
+  margin: 2rem 0;
+}
+
+.setup-card {
+  background: linear-gradient(135deg, rgba(139, 74, 115, 0.08) 0%, rgba(200, 90, 62, 0.08) 50%, rgba(143, 90, 51, 0.08) 100%);
+  border: 2px solid rgba(143, 90, 51, 0.3);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto;
+  overflow: hidden;
+  margin-bottom: 7rem;
+}
+
+.setup-header {
+  background: linear-gradient(135deg, rgba(143, 90, 51, 0.15) 0%, rgba(200, 90, 62, 0.1) 100%);
+  border-bottom: 1px solid rgba(143, 90, 51, 0.2);
+  padding: 2rem;
+  text-align: center;
+}
+
+.setup-header .card-title {
+  color: #EFDFC2;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.setup-header .card-description {
+  color: rgba(239, 223, 194, 0.85);
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.setup-form {
+  padding: 2rem;
+}
+
+.privacy-notice {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(5px);
+}
+
+.privacy-notice p {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  color: #EFDFC2;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid rgba(143, 90, 51, 0.4);
+  border-radius: 10px;
+  background: rgba(31, 18, 26, 0.8);
+  color: #EFDFC2;
+  font-family: "Montserrat", sans-serif;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: rgba(31, 18, 26, 0.95);
+  box-shadow: 0 0 0 2px rgba(239, 223, 194, 0.2);
+  transform: translateY(-1px);
+}
+
+.form-input::placeholder {
+  color: rgba(239, 223, 194, 0.6);
+}
+
+.setup-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border: 2px solid var(--card-border);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(143, 90, 51, 0.2) 0%, rgba(200, 90, 62, 0.15) 100%);
+  color: #EFDFC2;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.setup-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(143, 90, 51, 0.4);
+  border-color: #F87272;
+  background: linear-gradient(135deg, rgba(143, 90, 51, 0.3) 0%, rgba(200, 90, 62, 0.25) 100%);
+}
+
+.setup-button:active {
+  transform: translateY(0);
+}
+
+/* Mobile responsiveness for profile setup */
+@media (max-width: 768px) {
+  .profile-setup-container {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .setup-card {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .setup-header {
+    padding: 1.5rem;
+  }
+
+  .setup-header .card-title {
+    font-size: 1.5rem;
+  }
+
+  .setup-form {
+    padding: 1.5rem;
+  }
+
+  .privacy-notice {
+    padding: 0.75rem;
+  }
+
+  .form-input {
+    padding: 0.75rem;
+  }
+
+  .setup-button {
+    padding: 0.75rem 1rem;
   }
 }
