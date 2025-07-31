@@ -149,6 +149,11 @@ class ConnectService:
                 "component": "connect_service"
             }
         )
+        
+        logger.info(
+            f"DEBUG: Creating profile for UID: '{uid}' (type: {type(uid)}, length: {len(uid)}), email: '{email}'",
+            extra={"user_uid": uid, "email_id": email, "component": "connect_service"}
+        )
 
         try:
             # Hash personal information
@@ -238,13 +243,37 @@ class ConnectService:
         Returns:
             Optional[UserProfileResponse]: User profile if exists
         """
+        logger.info(
+            f"DEBUG: Getting user profile for UID: '{uid}' (type: {type(uid)}, length: {len(uid)})",
+            extra={"user_uid": uid, "component": "connect_service"}
+        )
+        
         async with get_db_session() as session:
             profile = await session.execute(
                 select(UserProfileORM).where(UserProfileORM.uid == uid)
             )
             profile = profile.scalar_one_or_none()
 
+            logger.info(
+                f"DEBUG: Profile query result for UID '{uid}': {profile}",
+                extra={"user_uid": uid, "component": "connect_service"}
+            )
+
             if not profile:
+                # Let's also check what profiles exist in the database
+                all_profiles = await session.execute(select(UserProfileORM))
+                all_profiles = all_profiles.scalars().all()
+                
+                logger.info(
+                    f"DEBUG: No profile found for UID '{uid}'. All profiles in DB:",
+                    extra={"user_uid": uid, "component": "connect_service"}
+                )
+                for p in all_profiles:
+                    logger.info(
+                        f"DEBUG: Profile ID {p.id}: UID='{p.uid}' (type: {type(p.uid)}, length: {len(p.uid)}), email='{p.email}'",
+                        extra={"user_uid": uid, "component": "connect_service"}
+                    )
+                
                 return None
 
             return UserProfileResponse(

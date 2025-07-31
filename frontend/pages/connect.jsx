@@ -34,14 +34,38 @@ const ConnectPage = () => {
 
   const fetchUserProfile = async () => {
     try {
+      console.log('Debug: Fetching user profile...');
       const response = await fetch('/api/connect/profile', {
         credentials: 'include'
       });
+      console.log('Debug: Fetching user profile response', response);
+
       if (response.ok) {
-        const profile = await response.json();
+        const responseText = await response.text();
+        console.log('Debug: Raw response text:', responseText);
+
+        let profile;
+        try {
+          profile = responseText ? JSON.parse(responseText) : null;
+        } catch (parseError) {
+          console.error('Debug: JSON parse error:', parseError);
+          console.error('Debug: Response text that failed to parse:', responseText);
+          profile = null;
+        }
+
+        console.log('Debug: Parsed user profile', profile);
         setUserProfile(profile);
+
+        // If profile is null, show profile setup
+        if (profile === null) {
+          console.log('Debug: Profile is null, showing setup');
+          setShowProfileSetup(true);
+        }
       } else if (response.status === 404) {
+        console.log('Debug: Profile not found (404), showing setup');
         setShowProfileSetup(true);
+      } else {
+        console.log('Debug: Unexpected response status:', response.status);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -85,6 +109,8 @@ const ConnectPage = () => {
 
   const handleProfileSetup = async (e) => {
     e.preventDefault();
+    console.log('Debug: Starting profile setup with data:', profileData);
+
     try {
       const response = await fetch('/api/connect/profile', {
         method: 'POST',
@@ -95,13 +121,38 @@ const ConnectPage = () => {
         body: JSON.stringify(profileData)
       });
 
+      console.log('Debug: Profile setup response status:', response.status);
+      console.log('Debug: Profile setup response:', response);
+
       if (response.ok) {
-        const profile = await response.json();
+        const responseText = await response.text();
+        console.log('Debug: Profile setup raw response:', responseText);
+
+        let profile;
+        try {
+          profile = responseText ? JSON.parse(responseText) : null;
+        } catch (parseError) {
+          console.error('Debug: Profile setup JSON parse error:', parseError);
+          profile = null;
+        }
+
+        console.log('Debug: Profile setup parsed response:', profile);
         setUserProfile(profile);
         setShowProfileSetup(false);
         alert('Profile setup completed successfully!');
+
+        // Refetch profile to verify it was saved
+        console.log('Debug: Refetching profile after setup...');
+        await fetchUserProfile();
       } else {
-        const error = await response.json();
+        const errorText = await response.text();
+        console.log('Debug: Profile setup error response:', errorText);
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch {
+          error = { error: errorText };
+        }
         alert(`Error: ${error.error}`);
       }
     } catch (error) {
@@ -419,7 +470,47 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  console.log('Debug: JoinCommunityPanel userProfile:', userProfile);
+
+  // If userProfile is null, show a message instead of the join form
+  if (!userProfile) {
+    return (
+      <div className="drawer-overlay" onClick={onClose}>
+        <div className="drawer-modal" onClick={e => e.stopPropagation()}>
+          <div className="drawer-header">
+            <h2 className="drawer-title">Profile Setup Required</h2>
+            <p className="drawer-description">You need to complete your profile setup before joining communities</p>
+          </div>
+          <div className="drawer-content">
+            <div className="p-4 pb-6 space-y-4">
+              <div className="bg-red-50 p-3 rounded-lg">
+                <h4 className="font-medium text-red-900 mb-2">Profile Not Found</h4>
+                <p className="text-sm text-red-800">
+                  Your profile setup was not completed properly. Please refresh the page and complete your profile setup again.
+                </p>
+              </div>
+
+              <Button
+                onClick={() => window.location.reload()}
+                className="w-full"
+              >
+                Refresh Page
+              </Button>
+            </div>
+            <div className="drawer-actions">
+              <Button onClick={onClose} className="btn-cancel">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleJoinRequest = async () => {
+    console.log('Debug: Starting join request with userProfile:', userProfile);
+
     if (!showConfirmation) {
       setShowConfirmation(true);
       return;
@@ -437,6 +528,8 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
         requestData.identifier_name = customName;
       }
 
+      console.log('Debug: Join request data:', requestData);
+
       const response = await fetch('/api/connect/join-requests', {
         method: 'POST',
         headers: {
@@ -446,13 +539,26 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
         body: JSON.stringify(requestData)
       });
 
+      console.log('Debug: Join request response status:', response.status);
+      console.log('Debug: Join request response:', response);
+
       if (response.ok) {
         alert('Join request submitted successfully!');
         setShowConfirmation(false);
         onJoinSuccess();
       } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
+        const errorText = await response.text();
+        console.log('Debug: Join request error response text:', errorText);
+
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch {
+          error = { error: errorText };
+        }
+
+        console.log('Debug: Join request parsed error:', error);
+        alert(`Error: ${error.detail || error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error submitting join request:', error);
