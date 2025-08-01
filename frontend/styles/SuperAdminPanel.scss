@@ -515,7 +515,8 @@
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  position: relative;
+  margin-bottom: 1rem;
 
   label {
     display: block;
@@ -551,6 +552,14 @@
     &::placeholder {
       color: rgba(239, 223, 194, 0.5);
     }
+  }
+
+  .char-count {
+    position: absolute;
+    bottom: -1.5rem;
+    right: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
   }
 
   textarea {
@@ -1087,66 +1096,56 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
 
-.form-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.25rem;
-}
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.25rem;
+  }
 
-.form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
 
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  .char-count {
+    position: absolute;
+    bottom: -1.5rem;
+    right: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  select {
+    cursor: pointer;
+
+    option {
+      background: #1f121a;
+      color: #efdfc2;
+      padding: 0.5rem;
+    }
   }
 }
 
-.form-select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background-color: white;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-}
-
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-}
-
-// Form actions
 .form-actions {
   display: flex;
   gap: 1rem;

@@ -317,6 +317,7 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
     icon: ''
   });
   const [loading, setLoading] = useState(false);
+  const isDescriptionOverLimit = formData.description.length > 512;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -416,6 +417,7 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
                 rows={3}
                 required
               />
+              <p className={`char-count${isDescriptionOverLimit ? ' char-count-over' : ''}`}>{formData.description.length}/512 characters</p>
             </div>
 
             <div className="form-grid">
@@ -741,6 +743,7 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
     icon: ''
   });
   const [loading, setLoading] = useState(false);
+  const [description, setDescription] = useState(community?.description || "");
 
   useEffect(() => {
     if (community) {
@@ -756,6 +759,13 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
       });
     }
   }, [community]);
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 512) {
+      setDescription(value);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -843,6 +853,7 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
                   className="form-textarea"
                   rows={3}
                 />
+                <p className="char-count">GAY{formData.description.length}/512 characters</p>
               </div>
 
               <div className="form-group">
