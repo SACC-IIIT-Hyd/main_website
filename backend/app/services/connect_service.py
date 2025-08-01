@@ -208,7 +208,6 @@ class ConnectService:
             extra={
                 "user_uid": uid,
                 "email": email,
-                "name": name,
                 "component": "connect_service"
             }
         )
@@ -597,7 +596,6 @@ class ConnectService:
         logger.info(
             "Creating new community",
             extra={
-                "name": community_data.name,
                 "creator_email": creator_email,
                 "component": "connect_service"
             }
@@ -638,7 +636,6 @@ class ConnectService:
                 "Community created successfully",
                 extra={
                     "community_id": community.id,
-                    "name": community.name,
                     "creator_email": creator_email,
                     "component": "connect_service"
                 }
@@ -745,7 +742,6 @@ class ConnectService:
                 "Community updated successfully",
                 extra={
                     "community_id": community.id,
-                    "name": community.name,
                     "user_email": user_email,
                     "component": "connect_service"
                 }
