@@ -545,6 +545,7 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
         },
         credentials: 'include',
         body: JSON.stringify({
+          community_id: parseInt(formData.community_id),
           admin_email: formData.admin_email,
           admin_name: formData.admin_name
         })
@@ -556,11 +557,12 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
         resetForm();
       } else {
         const error = await response.json();
+        console.error('Server error:', error);
         toast.error(`Error: ${error.detail || 'Failed to create admin'}`);
       }
     } catch (error) {
       console.error('Error creating admin:', error);
-      toast.error('Failed to create admin. Please try again.');
+      toast.error(`Failed to create admin: ${error.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
