@@ -20,9 +20,9 @@ Example:
 
 import hashlib
 from datetime import datetime
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Tuple
 from fastapi import HTTPException, status
-from sqlalchemy import select, and_, or_, func
+from sqlalchemy import select, and_, or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload, joinedload
 
@@ -157,6 +157,17 @@ class ConnectService:
                 email=email,
                 name=name
             )
+
+            # By default, add the email as an identifier,
+            # with label as "CAS email"
+            identifier_hash = self._hash_identifier(email)
+            identifier = IdentifierORM(
+                user_id=profile.id,
+                label="CAS email",
+                identifier_hash=identifier_hash
+            )
+
+            profile.identifiers.append(identifier)
 
             session.add(profile)
             await session.commit()
