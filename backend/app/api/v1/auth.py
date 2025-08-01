@@ -130,8 +130,8 @@ async def login(
             logger.warning("CAS ticket verification failed - no user data")
             return 'Failed to verify ticket. <a href="/api/login">Login</a>'
 
-        # Create user session and JWT token
-        login_response = auth_service.create_user_session(user_data)
+        # Create user session and JWT token (now with connect service integration)
+        login_response = await auth_service.create_user_session(user_data)
 
         # Determine redirect URL
         redirect_url = next_url or settings.redirect_url
