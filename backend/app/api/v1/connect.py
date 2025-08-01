@@ -488,6 +488,57 @@ async def update_community(
     return community
 
 
+@router.delete("/communities/{community_id}")
+async def delete_community(
+    community_id: int,
+    user: UserResponse = Depends(get_current_user),
+    connect_service: ConnectService = Depends(get_connect_service)
+):
+    """
+    Delete a community (super admin only).
+
+    This endpoint allows super admins to permanently delete a community
+    and all associated data including admins.
+
+    Args:
+        community_id: ID of the community to delete
+        user: Current authenticated user (must be super admin)
+        connect_service: Connect service instance
+
+    Returns:
+        Dict: Success status
+
+    Raises:
+        HTTPException: If user is not super admin (403) or community not found (404)
+    """
+    logger.info(
+        "Deleting community",
+        extra={
+            "user_uid": user.uid,
+            "email": user.email,
+            "community_id": community_id,
+            "component": "connect_api"
+        }
+    )
+
+    await connect_service.delete_community(
+        community_id=community_id,
+        deleter_email=user.email
+    )
+
+    logger.info(
+        "Community deleted successfully",
+        extra={
+            "user_uid": user.uid,
+            "email": user.email,
+            "community_id": community_id,
+            "component": "connect_api"
+        }
+    )
+
+    return {"success": True, "message": "Community deleted successfully"}
+
+
 # =============================================================================
 # ADMIN MANAGEMENT ROUTES
 # =============================================================================

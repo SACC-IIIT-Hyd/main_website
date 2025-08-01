@@ -123,7 +123,7 @@ const ConnectPage = () => {
     try {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
-      if (platformFilter) params.append('platform_type', platformFilter);
+      if (platformFilter) params.append('platform', platformFilter);
       if (tagFilter) params.append('tag', tagFilter);
 
       const response = await fetch(`/api/connect/communities?${params}`, {
@@ -598,7 +598,7 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
         }
       } else {
         // For existing identifiers, just show success message
-        toast.success(`You can join this community using your existing ${identifierType}. Please follow the invite link or instructions provided.`);
+        toast.success(`Your request was successful. Please follow the invite link or instructions provided.`);
         setShowDialog(false);
         onJoinSuccess();
       }

@@ -925,6 +925,104 @@ class ConnectService:
 
             return community_responses
 
+    async def delete_community(
+        self,
+        community_id: int,
+        deleter_email: str
+    ) -> None:
+        """
+        Delete a community and all associated data.
+
+        Args:
+            community_id: ID of community to delete
+            deleter_email: Email of the super admin making the deletion
+
+        Raises:
+            HTTPException: If user is not super admin or community not found
+        """
+        logger.info(
+            "Deleting community",
+            extra={
+                "community_id": community_id,
+                "deleter_email": deleter_email,
+                "component": "connect_service"
+            }
+        )
+
+        # Check if user is super admin
+        if not self._is_super_admin(deleter_email):
+            logger.warning(
+                "Unauthorized community deletion attempt",
+                extra={
+                    "community_id": community_id,
+                    "deleter_email": deleter_email,
+                    "component": "connect_service"
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only super admins can delete communities"
+            )
+
+        async with get_db_session() as session:
+            try:
+                # Check if community exists
+                query = select(CommunityORM).where(CommunityORM.id == community_id)
+                result = await session.execute(query)
+                community = result.scalars().first()
+
+                if not community:
+                    logger.warning(
+                        "Community not found for deletion",
+                        extra={
+                            "community_id": community_id,
+                            "deleter_email": deleter_email,
+                            "component": "connect_service"
+                        }
+                    )
+                    raise NotFoundError(f"Community not found with ID: {community_id}")
+
+                # Delete associated admins first (cascade should handle this, but let's be explicit)
+                admin_query = select(CommunityAdminORM).where(
+                    CommunityAdminORM.community_id == community_id
+                )
+                admin_result = await session.execute(admin_query)
+                admins = admin_result.scalars().all()
+                
+                for admin in admins:
+                    await session.delete(admin)
+
+                # Delete the community
+                await session.delete(community)
+                await session.commit()
+
+                logger.info(
+                    "Community deleted successfully",
+                    extra={
+                        "community_id": community_id,
+                        "community_name": community.name,
+                        "deleted_admins_count": len(admins),
+                        "deleter_email": deleter_email,
+                        "component": "connect_service"
+                    }
+                )
+
+            except SQLAlchemyError as e:
+                await session.rollback()
+                logger.error(
+                    "Database error during community deletion",
+                    extra={
+                        "community_id": community_id,
+                        "deleter_email": deleter_email,
+                        "error": str(e),
+                        "component": "connect_service"
+                    }
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Database error occurred during community deletion"
+                )
+
     async def add_community_admin(
         self,
         admin_data: CommunityAdminCreate,
