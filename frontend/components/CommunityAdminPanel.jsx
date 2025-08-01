@@ -34,21 +34,38 @@ const CommunityAdminPanel = ({ onClose }) => {
 
   const fetchAdminCommunities = async () => {
     try {
-      const response = await fetch('/api/connect/admin/communities', {
+      const response = await fetch('/api/connect/user-roles', {
         credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
-        setAdminCommunities(data);
+        if (data.admin_communities && data.admin_communities.length > 0) {
+          // Fetch community details for each admin community
+          const communityPromises = data.admin_communities.map(async (communityId) => {
+            const communityResponse = await fetch(`/api/connect/communities/${communityId}`, {
+              credentials: 'include'
+            });
+            if (communityResponse.ok) {
+              return await communityResponse.json();
+            }
+            return null;
+          });
+
+          const communities = await Promise.all(communityPromises);
+          setAdminCommunities(communities.filter(c => c !== null));
+        } else {
+          setAdminCommunities([]);
+        }
+      } else {
+        toast.error('Failed to fetch admin communities');
       }
     } catch (error) {
       console.error('Error fetching admin communities:', error);
+      toast.error('Failed to fetch admin communities');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCommunitySelect = (community) => {
+  }; const handleCommunitySelect = (community) => {
     setSelectedCommunity(community);
   };
 
@@ -234,7 +251,7 @@ const CommunityManagement = ({ community }) => {
 
     setVerificationLoading(true);
     try {
-      const response = await fetch(`/api/connect/communities/${community.id}/verify-identifier`, {
+      const response = await fetch(`/api/connect/verify-identifier`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -8,16 +8,15 @@ import '@/styles/ProfilePanel.scss';
 const ProfilePanel = ({ userProfile, onDeleteIdentifier, onClose }) => {
     const [showConfirm, setShowConfirm] = useState(null);
 
+    // Build identifiers list from the new backend structure
     const identifiers = [];
-    if (userProfile?.has_personal_info || userProfile?.personal_email_hash) {
-        identifiers.push({ type: 'Email', value: 'Set' });
-    }
-    if (userProfile?.has_personal_info || userProfile?.phone_hash) {
-        identifiers.push({ type: 'Phone', value: 'Set' });
-    }
-    if (userProfile?.custom_identifiers && Array.isArray(userProfile.custom_identifiers)) {
-        userProfile.custom_identifiers.forEach((id) => {
-            identifiers.push({ type: id.name || 'Custom', value: 'Set' });
+    if (userProfile?.identifiers && Array.isArray(userProfile.identifiers)) {
+        userProfile.identifiers.forEach((identifier) => {
+            identifiers.push({
+                id: identifier.id,
+                type: identifier.label,
+                value: 'Set' // We don't show actual values for security
+            });
         });
     }
 
@@ -46,7 +45,7 @@ const ProfilePanel = ({ userProfile, onDeleteIdentifier, onClose }) => {
                                         {showConfirm === idx && (
                                             <div className="confirm-delete">
                                                 <span>Delete this {id.type}?</span>
-                                                <Button size="sm" onClick={() => { setShowConfirm(null); onDeleteIdentifier(id); }}>Yes</Button>
+                                                <Button size="sm" onClick={() => { setShowConfirm(null); onDeleteIdentifier(id.id); }}>Yes</Button>
                                                 <Button size="sm" variant="outline" onClick={() => setShowConfirm(null)}>No</Button>
                                             </div>
                                         )}

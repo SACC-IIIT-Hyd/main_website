@@ -39,36 +39,33 @@ const ConnectPage = () => {
   const [platformFilter, setPlatformFilter] = useState('');
   const [tagFilter, setTagFilter] = useState('');
   const [showProfileSetup, setShowProfileSetup] = useState(false);
-  const [profileData, setProfileData] = useState({ personal_email: '', phone_number: '' });
+  const [profileData, setProfileData] = useState({
+    identifiers: [
+      { label: 'personal_email', value: '' },
+      { label: 'phone_number', value: '' }
+    ]
+  });
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
   const [showCommunityAdminPanel, setShowCommunityAdminPanel] = useState(false);
   const [showJoinCommunityPanel, setShowJoinCommunityPanel] = useState(null); // holds the community object
   const [showProfilePanel, setShowProfilePanel] = useState(false);
+
   // Delete identifier handler
-  const handleDeleteIdentifier = async (identifier) => {
-    let endpoint = '/api/connect/profile/identifier';
-    let payload = {};
-    if (identifier.type === 'Email') {
-      payload = { type: 'personal_email' };
-    } else if (identifier.type === 'Phone') {
-      payload = { type: 'phone_number' };
-    } else {
-      payload = { type: 'custom', value: identifier.value };
-    }
+  const handleDeleteIdentifier = async (identifierId) => {
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(`/api/connect/profile/identifiers/${identifierId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
+        credentials: 'include'
       });
       if (response.ok) {
-        toast.success('Identifier deleted');
+        toast.success('Identifier deleted successfully');
         fetchUserProfile();
       } else {
-        toast.error('Failed to delete identifier');
+        const error = await response.json();
+        toast.error(`Failed to delete identifier: ${error.detail || 'Unknown error'}`);
       }
     } catch (e) {
+      console.error('Error deleting identifier:', e);
       toast.error('Error deleting identifier');
     }
   };
@@ -88,26 +85,10 @@ const ConnectPage = () => {
       console.log('Debug: Fetching user profile response', response);
 
       if (response.ok) {
-        const responseText = await response.text();
-        console.log('Debug: Profile response text:', responseText);
-
-        if (!responseText) {
-          console.log('Debug: Empty response, user profile not set up');
-          setUserProfile(null);
-          setShowProfileSetup(true);
-          return;
-        }
-
-        try {
-          const data = JSON.parse(responseText);
-          console.log('Debug: Parsed profile data:', data);
-          setUserProfile(data);
-          setShowProfileSetup(false);
-        } catch (parseError) {
-          console.error('Debug: Error parsing profile JSON:', parseError);
-          setUserProfile(null);
-          setShowProfileSetup(true);
-        }
+        const data = await response.json();
+        console.log('Debug: Profile data:', data);
+        setUserProfile(data);
+        setShowProfileSetup(false);
       } else if (response.status === 404) {
         console.log('Debug: Profile not found, showing setup');
         setUserProfile(null);
@@ -142,7 +123,7 @@ const ConnectPage = () => {
     try {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
-      if (platformFilter) params.append('platform', platformFilter);
+      if (platformFilter) params.append('platform_type', platformFilter);
       if (tagFilter) params.append('tag', tagFilter);
 
       const response = await fetch(`/api/connect/communities?${params}`, {
@@ -192,6 +173,7 @@ const ConnectPage = () => {
     const iconMap = {
       discord: '🎮',
       whatsapp: '💬',
+      facebook: '📘',
       teams: '🏢',
       slack: '💼',
       telegram: '✈️',
@@ -250,8 +232,13 @@ const ConnectPage = () => {
                       <label className="form-label block mb-1 font-medium">Personal Email Address</label>
                       <Input
                         type="email"
-                        value={profileData.personal_email}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, personal_email: e.target.value }))}
+                        value={profileData.identifiers[0]?.value || ''}
+                        onChange={(e) => setProfileData(prev => ({
+                          ...prev,
+                          identifiers: prev.identifiers.map((id, index) =>
+                            index === 0 ? { ...id, value: e.target.value } : id
+                          )
+                        }))}
                         placeholder="your.personal@email.com"
                         required
                         className="form-input w-full"
@@ -262,8 +249,13 @@ const ConnectPage = () => {
                       <label className="form-label block mb-1 font-medium">Phone Number</label>
                       <Input
                         type="tel"
-                        value={profileData.phone_number}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, phone_number: e.target.value }))}
+                        value={profileData.identifiers[1]?.value || ''}
+                        onChange={(e) => setProfileData(prev => ({
+                          ...prev,
+                          identifiers: prev.identifiers.map((id, index) =>
+                            index === 1 ? { ...id, value: e.target.value } : id
+                          )
+                        }))}
                         placeholder="+91 98765 43210"
                         required
                         className="form-input w-full"
@@ -361,6 +353,7 @@ const ConnectPage = () => {
               <option value="">All Platforms</option>
               <option value="discord">Discord</option>
               <option value="whatsapp">WhatsApp</option>
+              <option value="facebook">Facebook</option>
               <option value="teams">Teams</option>
               <option value="slack">Slack</option>
               <option value="telegram">Telegram</option>
@@ -523,10 +516,9 @@ const ConnectPage = () => {
 
 // Join Community Panel Component (modal style)
 const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) => {
-  const [identifierType, setIdentifierType] = useState('email');
+  const [identifierType, setIdentifierType] = useState('existing');
   const [customIdentifier, setCustomIdentifier] = useState('');
   const [customName, setCustomName] = useState('');
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
 
   console.log('Debug: JoinCommunityPanel userProfile:', userProfile);
@@ -569,59 +561,59 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
 
   // Dialog state for join request
   const [showDialog, setShowDialog] = useState(false);
-  const [pendingJoinRequest, setPendingJoinRequest] = useState(null);
 
-  const handleJoinRequest = async () => {
+  const handleAddIdentifier = async () => {
+    if (identifierType === 'custom' && (!customIdentifier || !customName)) {
+      toast.error('Please fill in all custom identifier fields');
+      return;
+    }
     setShowDialog(true);
-    setPendingJoinRequest({
-      community_id: community.id,
-      identifier_type: identifierType,
-      identifier_value: identifierType === 'custom' ? customIdentifier : undefined,
-      identifier_name: identifierType === 'custom' ? customName : undefined
-    });
   };
 
-  const confirmJoinRequest = async () => {
+  const confirmAddIdentifier = async () => {
     setLoading(true);
     try {
-      const requestData = { ...pendingJoinRequest };
-      if (!requestData.identifier_value) delete requestData.identifier_value;
-      if (!requestData.identifier_name) delete requestData.identifier_name;
-      const response = await fetch('/api/connect/join-requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(requestData)
-      });
-      if (response.ok) {
-        toast.success('Join request submitted successfully!');
-        setShowDialog(false);
-        setShowConfirmation(false);
-        onJoinSuccess();
-      } else {
-        const errorText = await response.text();
-        let error;
-        try {
-          error = JSON.parse(errorText);
-        } catch {
-          error = { error: errorText };
+      if (identifierType === 'custom') {
+        const requestData = {
+          label: customName,
+          value: customIdentifier
+        };
+
+        const response = await fetch('/api/connect/profile/identifiers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(requestData)
+        });
+
+        if (response.ok) {
+          toast.success('Identifier added successfully! You can now join this community using this identifier.');
+          setShowDialog(false);
+          onJoinSuccess();
+        } else {
+          const error = await response.json();
+          toast.error(`Error: ${error.detail || 'Failed to add identifier'}`);
         }
-        toast.error(`Error: ${error.detail || error.error || 'Unknown error'}`);
+      } else {
+        // For existing identifiers, just show success message
+        toast.success(`You can join this community using your existing ${identifierType}. Please follow the invite link or instructions provided.`);
+        setShowDialog(false);
+        onJoinSuccess();
       }
     } catch (error) {
-      toast.error('Failed to submit join request. Please try again.');
+      console.error('Error adding identifier:', error);
+      toast.error('Failed to add identifier. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const resetForm = () => {
-    setIdentifierType('email');
+    setIdentifierType('existing');
     setCustomIdentifier('');
     setCustomName('');
-    setShowConfirmation(false);
   };
 
   useEffect(() => {
@@ -635,7 +627,7 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
       <div className="drawer-modal" onClick={e => e.stopPropagation()}>
         <div className="drawer-header">
           <h2 className="drawer-title">Join {community.name}</h2>
-          <p className="drawer-description">Choose how you'd like to identify yourself for this community</p>
+          <p className="drawer-description">Join this community using one of your identifiers</p>
         </div>
         <div className="drawer-content">
           <div className="p-4 pb-6 space-y-4">
@@ -643,6 +635,20 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
               <h4 className="font-medium text-blue-900 mb-2">Instructions:</h4>
               <p className="text-sm text-blue-800">{community.identifier_format_instruction}</p>
             </div>
+
+            {community.invite_link && (
+              <div className="bg-green-50 p-3 rounded-lg">
+                <h4 className="font-medium text-green-900 mb-2">Invite Link:</h4>
+                <a
+                  href={community.invite_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-green-800 underline hover:no-underline"
+                >
+                  {community.invite_link}
+                </a>
+              </div>
+            )}
 
             <>
               <div>
@@ -652,23 +658,12 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
                     <input
                       type="radio"
                       name="identifierType"
-                      value="email"
-                      checked={identifierType === 'email'}
+                      value="existing"
+                      checked={identifierType === 'existing'}
                       onChange={e => setIdentifierType(e.target.value)}
                       className="mr-2"
                     />
-                    Use my personal email (already setup)
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="identifierType"
-                      value="phone"
-                      checked={identifierType === 'phone'}
-                      onChange={e => setIdentifierType(e.target.value)}
-                      className="mr-2"
-                    />
-                    Use my phone number (already setup)
+                    Use my existing identifiers (from profile setup)
                   </label>
                   <label className="flex items-center">
                     <input
@@ -679,7 +674,7 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
                       onChange={e => setIdentifierType(e.target.value)}
                       className="mr-2"
                     />
-                    Enter custom identifier
+                    Add a new custom identifier
                   </label>
                 </div>
               </div>
@@ -687,9 +682,9 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
               {identifierType === 'custom' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Identifier Name</label>
+                    <label className="block text-sm font-medium mb-1">Identifier Label</label>
                     <Input
-                      placeholder="e.g., 'Work Email', 'Discord Username'"
+                      placeholder="e.g., 'discord_username', 'work_email'"
                       value={customName}
                       onChange={e => setCustomName(e.target.value)}
                       required
@@ -710,26 +705,25 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
               )}
 
               <Button
-                onClick={handleJoinRequest}
+                onClick={handleAddIdentifier}
                 className="w-full"
                 disabled={identifierType === 'custom' && (!customIdentifier || !customName)}
               >
-                Continue
+                {identifierType === 'custom' ? 'Add Identifier & Join' : 'Continue to Join'}
               </Button>
               {/* ConfirmDialog for join request */}
               <ConfirmDialog
                 open={showDialog}
-                title="Confirm Your Request"
+                title={identifierType === 'custom' ? 'Add New Identifier' : 'Join Community'}
                 description={
-                  <span>
-                    Please confirm that you have entered your identifier in the exact format required by this community.<br />
-                    This cannot be changed after submission.
-                  </span>
+                  identifierType === 'custom'
+                    ? 'This will add a new identifier to your profile that you can use for this and other communities.'
+                    : 'You can join this community using your existing identifiers. Follow any invite links or instructions provided by the community.'
                 }
                 onCancel={() => { setShowDialog(false); setLoading(false); }}
-                onConfirm={confirmJoinRequest}
-                confirmText="Confirm & Submit"
-                cancelText="Go Back"
+                onConfirm={confirmAddIdentifier}
+                confirmText={identifierType === 'custom' ? 'Add Identifier' : 'Understood'}
+                cancelText="Cancel"
                 loading={loading}
               />
             </>

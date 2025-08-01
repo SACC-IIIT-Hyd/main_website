@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, Users, Trash2, Edit, X, MessageSquare, Phone, Briefcase, Send, Linkedin, Globe } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { X, Plus, Trash2, Edit, Users, Building2, MessageSquare, Phone, Briefcase, Send, Linkedin, Globe } from 'lucide-react';
+import { toast } from 'sonner';
 import '@/styles/SuperAdminPanel.scss';
-import { Toaster, toast } from 'sonner';
+
+// Simple Textarea component
+const Textarea = ({ className, ...props }) => (
+  <textarea
+    className={`border border-gray-300 rounded-md p-2 w-full ${className || ''}`}
+    {...props}
+  />
+);
 
 // ConfirmDialog for confirmations
 const ConfirmDialog = ({ open, title, description, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel', loading }) => {
@@ -45,6 +56,8 @@ const SuperAdminPanel = ({ onClose }) => {
       if (response.ok) {
         const data = await response.json();
         setCommunities(data);
+      } else {
+        toast.error('Failed to fetch communities');
       }
     } catch (error) {
       console.error('Error fetching communities:', error);
@@ -56,6 +69,7 @@ const SuperAdminPanel = ({ onClose }) => {
   const platformOptions = [
     { value: 'discord', label: 'Discord', icon: <MessageSquare size={20} /> },
     { value: 'whatsapp', label: 'WhatsApp', icon: <Phone size={20} /> },
+    { value: 'facebook', label: 'Facebook', icon: <Phone size={20} /> },
     { value: 'teams', label: 'Microsoft Teams', icon: <Briefcase size={20} /> },
     { value: 'slack', label: 'Slack', icon: <Briefcase size={20} /> },
     { value: 'telegram', label: 'Telegram', icon: <Send size={20} /> },
@@ -72,17 +86,17 @@ const SuperAdminPanel = ({ onClose }) => {
     if (!pendingRemoveAdminId) return;
 
     try {
-      const response = await fetch(`/api/connect/community-admins/${pendingRemoveAdminId}`, {
+      const response = await fetch(`/api/connect/admins/${pendingRemoveAdminId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
 
       if (response.ok) {
         toast.success('Admin removed successfully!');
-        fetchCommunityAdmins(); // Refresh the list
+        fetchCommunities(); // Refresh the list
       } else {
         const error = await response.json();
-        toast.error(`Error: ${error.message || 'Failed to remove admin'}`);
+        toast.error(`Error: ${error.detail || 'Failed to remove admin'}`);
       }
     } catch (error) {
       console.error('Error removing admin:', error);
@@ -108,85 +122,75 @@ const SuperAdminPanel = ({ onClose }) => {
           </div>
 
           <div className="panel-content">
-            {/* Action Buttons */}
-            <div className="admin-actions">
-              <Button
-                onClick={() => setShowCreateCommunity(true)}
-                className="action-button primary"
-              >
-                <Plus className="icon" />
-                Create Community
-              </Button>
-
-              <Button
-                onClick={() => setShowCreateAdmin(true)}
-                className="action-button"
-              >
-                <Users className="icon" />
-                Assign Admin
-              </Button>
-            </div>
-
-            {/* Communities Management */}
-            <div className="communities-section">
-              <h2 className="section-title">Manage Communities</h2>
-
-              {loading ? (
-                <div className="loading-container">
-                  <div className="loading-spinner"></div>
-                  <span className="loading-text">Loading communities...</span>
+            {loading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <span className="loading-text">Loading communities...</span>
+              </div>
+            ) : (
+              <>
+                {/* Action Buttons */}
+                <div className="action-buttons">
+                  <Button
+                    className="action-btn create-community-btn"
+                    onClick={() => setShowCreateCommunity(true)}
+                  >
+                    <Plus size={20} />
+                    Create Community
+                  </Button>
+                  <Button
+                    className="action-btn create-admin-btn"
+                    onClick={() => setShowCreateAdmin(true)}
+                  >
+                    <Users size={20} />
+                    Create Admin
+                  </Button>
                 </div>
-              ) : (
+
+                {/* Communities Grid */}
                 <div className="communities-grid">
                   {communities.map((community) => (
                     <div key={community.id} className="community-card">
-                      <div className="card-header-custom">
-                        <div className="card-header-content">
-                          <div className="community-info">
-                            <span className="platform-icon">
-                              {community.icon || platformOptions.find(p => p.value === community.platform_type)?.icon}
-                            </span>
-                            <h3 className="community-name">{community.name}</h3>
-                          </div>
-                          <div className="card-actions">
-                            <button
-                              className="action-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCommunityForAdmins(community);
-                              }}
-                              title="Manage Admins"
-                            >
-                              <Users className="icon" />
-                            </button>
-                            <button
-                              className="action-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCommunityForEdit(community);
-                              }}
-                              title="Edit Community"
-                            >
-                              <Edit className="icon" />
-                            </button>
-                            <button
-                              className="action-btn delete-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCommunityForDelete(community);
-                              }}
-                              title="Delete Community"
-                            >
-                              <Trash2 className="icon" />
-                            </button>
-                          </div>
+                      <div className="card-header">
+                        <div className="community-info">
+                          <span className="community-icon">
+                            {community.icon || <Globe size={24} />}
+                          </span>
+                          <h3 className="community-name">{community.name}</h3>
+                        </div>
+                        <div className="card-actions">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedCommunityForAdmins(community)}
+                            title="Manage Admins"
+                          >
+                            <Users size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedCommunityForEdit(community)}
+                            title="Edit Community"
+                          >
+                            <Edit size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedCommunityForDelete(community)}
+                            title="Delete Community"
+                            className="delete-btn"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
                       </div>
 
-                      <div className="card-content-custom">
+                      <div className="card-content">
                         <p className="community-description">
-                          {community.description.length > 100
-                            ? community.description.substring(0, 100) + '...'
+                          {community.description.length > 80
+                            ? community.description.substring(0, 80) + '...'
                             : community.description
                           }
                         </p>
@@ -203,46 +207,46 @@ const SuperAdminPanel = ({ onClose }) => {
 
                         {community.tags && community.tags.length > 0 && (
                           <div className="tags-container">
-                            {community.tags.slice(0, 3).map((tag, idx) => (
-                              <span key={idx} className="tag-badge">
+                            {community.tags.slice(0, 3).map((tag, index) => (
+                              <Badge key={index} variant="secondary" className="tag">
                                 {tag}
-                              </span>
+                              </Badge>
                             ))}
                             {community.tags.length > 3 && (
-                              <span className="tag-badge">
+                              <Badge variant="outline" className="tag more-tags">
                                 +{community.tags.length - 3}
-                              </span>
+                              </Badge>
                             )}
                           </div>
                         )}
-
-                        <div className="status-section">
-                          <span className={`status-badge ${community.is_active ? "approved" : "pending"}`}>
-                            {community.is_active ? "Active" : "Inactive"}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
 
-              {communities.length === 0 && !loading && (
-                <div className="empty-state">
-                  <div className="empty-icon"><Users size={48} /></div>
-                  <h3 className="empty-title">No Communities Found</h3>
-                  <p className="empty-subtitle">
-                    Create your first community to get started with community management.
-                  </p>
-                </div>
-              )}
-            </div>
+                {communities.length === 0 && (
+                  <div className="empty-state">
+                    <div className="empty-icon"><Building2 size={48} /></div>
+                    <h3 className="empty-title">No Communities Found</h3>
+                    <p className="empty-subtitle">
+                      Create your first community to get started with alumni engagement.
+                    </p>
+                    <Button
+                      className="empty-action-btn"
+                      onClick={() => setShowCreateCommunity(true)}
+                    >
+                      <Plus size={20} />
+                      Create Community
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-
         </div>
       </div>
 
-      {/* Modals rendered outside the panel container */}
+      {/* Modals and Drawers */}
       <CreateCommunityDrawer
         isOpen={showCreateCommunity}
         onClose={() => setShowCreateCommunity(false)}
@@ -256,7 +260,10 @@ const SuperAdminPanel = ({ onClose }) => {
       <CreateAdminDrawer
         isOpen={showCreateAdmin}
         onClose={() => setShowCreateAdmin(false)}
-        onSuccess={() => setShowCreateAdmin(false)}
+        onSuccess={() => {
+          setShowCreateAdmin(false);
+          fetchCommunities();
+        }}
         communities={communities}
       />
 
@@ -264,6 +271,7 @@ const SuperAdminPanel = ({ onClose }) => {
         isOpen={!!selectedCommunityForAdmins}
         community={selectedCommunityForAdmins}
         onClose={() => setSelectedCommunityForAdmins(null)}
+        onRemoveAdmin={handleRemoveAdmin}
       />
 
       <EditCommunityDrawer
@@ -287,14 +295,13 @@ const SuperAdminPanel = ({ onClose }) => {
         }}
       />
 
-      {/* Confirm Dialog for removing admin */}
       <ConfirmDialog
         open={showRemoveAdminDialog}
         title="Remove Admin"
-        description="Are you sure you want to remove this admin from the community?"
+        description="Are you sure you want to remove this admin? This action cannot be undone."
         onConfirm={confirmRemoveAdmin}
         onCancel={() => setShowRemoveAdminDialog(false)}
-        confirmText="Yes, Remove"
+        confirmText="Remove"
         cancelText="Cancel"
         loading={false}
       />
@@ -304,59 +311,40 @@ const SuperAdminPanel = ({ onClose }) => {
 
 // Create Community Drawer Component
 const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) => {
-  console.log('CreateCommunityDrawer render - isOpen:', isOpen);
-
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    platform_type: 'discord',
-    tags: '',
+    platform_type: '',
+    tags: [],
     member_count: 0,
     invite_link: '',
     identifier_format_instruction: '',
     icon: ''
   });
+  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const isDescriptionOverLimit = formData.description.length > 512;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const submitData = {
-        ...formData,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        member_count: parseInt(formData.member_count) || 0
-      };
-
       const response = await fetch('/api/connect/communities', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(submitData)
+        body: JSON.stringify(formData)
       });
 
       if (response.ok) {
         toast.success('Community created successfully!');
-        setFormData({
-          name: '',
-          description: '',
-          platform_type: 'discord',
-          tags: '',
-          member_count: 0,
-          invite_link: '',
-          identifier_format_instruction: '',
-          icon: ''
-        });
         onSuccess();
+        resetForm();
       } else {
         const error = await response.json();
-        console.error('Backend validation error:', error);
-        const errorMessage = error.detail?.[0]?.msg || error.detail || error.message || 'Unknown validation error';
-        toast.error(`Error: ${errorMessage}`);
+        toast.error(`Error: ${error.detail || 'Failed to create community'}`);
       }
     } catch (error) {
       console.error('Error creating community:', error);
@@ -366,126 +354,171 @@ const CreateCommunityDrawer = ({ isOpen, onClose, onSuccess, platformOptions }) 
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      platform_type: '',
+      tags: [],
+      member_count: 0,
+      invite_link: '',
+      identifier_format_instruction: '',
+      icon: ''
+    });
+    setTagInput('');
+  };
+
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tagInput.trim()]
+      }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-overlay">
+      <div className="drawer-content create-community-drawer">
         <div className="drawer-header">
           <h2 className="drawer-title">Create New Community</h2>
-          <p className="drawer-description">Add a new alumni community to the connect page</p>
+          <Button variant="ghost" onClick={onClose}>
+            <X size={20} />
+          </Button>
         </div>
 
-        <div className="drawer-content">
-          <form onSubmit={handleSubmit} className="form-container">
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Community Name *</label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., IIITH Alumni Discord"
-                  required
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Platform *</label>
-                <select
-                  value={formData.platform_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, platform_type: e.target.value }))}
-                  className="form-select"
-                  required
-                >
-                  {platformOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
+        <form onSubmit={handleSubmit} className="drawer-form">
+          <div className="form-grid">
             <div className="form-group">
-              <label className="form-label">Description *</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe the community purpose and guidelines..."
-                className="form-textarea"
-                rows={3}
+              <label className="form-label">Community Name *</label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter community name"
                 required
               />
-              <p className={`char-count${isDescriptionOverLimit ? ' char-count-over' : ''}`}>{formData.description.length}/512 characters</p>
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Tags</label>
-                <Input
-                  value={formData.tags}
-                  onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                  placeholder="alumni, tech, social (comma-separated)"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Member Count</label>
-                <Input
-                  type="number"
-                  value={formData.member_count}
-                  onChange={(e) => setFormData(prev => ({ ...prev, member_count: e.target.value }))}
-                  placeholder="0"
-                  min="0"
-                  className="form-input"
-                />
-              </div>
             </div>
 
             <div className="form-group">
+              <label className="form-label">Platform Type *</label>
+              <select
+                value={formData.platform_type}
+                onChange={(e) => setFormData(prev => ({ ...prev, platform_type: e.target.value }))}
+                className="platform-select"
+                required
+              >
+                <option value="">Select Platform</option>
+                {platformOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group full-width">
+              <label className="form-label">Description *</label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe the community purpose and guidelines"
+                required
+                rows={3}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Member Count</label>
+              <Input
+                type="number"
+                value={formData.member_count}
+                onChange={(e) => setFormData(prev => ({ ...prev, member_count: parseInt(e.target.value) || 0 }))}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Icon (Emoji)</label>
+              <Input
+                value={formData.icon}
+                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                placeholder="🎮"
+                maxLength={1}
+              />
+            </div>
+
+            <div className="form-group full-width">
               <label className="form-label">Invite Link</label>
               <Input
                 value={formData.invite_link}
                 onChange={(e) => setFormData(prev => ({ ...prev, invite_link: e.target.value }))}
-                placeholder="https://discord.gg/..."
-                className="form-input"
+                placeholder="https://discord.gg/example"
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group full-width">
               <label className="form-label">Join Instructions *</label>
-              <textarea
+              <Textarea
                 value={formData.identifier_format_instruction}
                 onChange={(e) => setFormData(prev => ({ ...prev, identifier_format_instruction: e.target.value }))}
-                placeholder="Instructions for users on how to format their identifier for joining this community..."
-                className="form-textarea"
-                rows={3}
+                placeholder="Instructions for how users should format their identifiers when joining"
                 required
+                rows={3}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Custom Icon (optional)</label>
-              <Input
-                value={formData.icon}
-                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-                placeholder="Enter emoji or leave blank for default"
-                className="form-input"
-              />
+            <div className="form-group full-width">
+              <label className="form-label">Tags</label>
+              <div className="tags-input-container">
+                <div className="tags-input-wrapper">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Add a tag"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  />
+                  <Button type="button" onClick={addTag} disabled={!tagInput.trim()}>
+                    Add
+                  </Button>
+                </div>
+                <div className="tags-list">
+                  {formData.tags.map(tag => (
+                    <Badge key={tag} variant="secondary" className="tag">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="tag-remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div className="form-actions">
-              <Button type="button" variant="outline" onClick={onClose} className="btn-cancel">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading} className="btn-submit">
-                {loading ? 'Creating...' : 'Create Community'}
-              </Button>
-            </div>
-          </form>
-        </div>
+          <div className="drawer-actions">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Creating...' : 'Create Community'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -505,63 +538,68 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/connect/community-admins', {
+      const response = await fetch(`/api/connect/communities/${formData.community_id}/admins`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({
-          community_id: parseInt(formData.community_id),
           admin_email: formData.admin_email,
           admin_name: formData.admin_name
         })
       });
 
       if (response.ok) {
-        toast.success('Community admin assigned successfully!');
-        setFormData({
-          community_id: '',
-          admin_email: '',
-          admin_name: ''
-        });
+        toast.success('Admin created successfully!');
         onSuccess();
+        resetForm();
       } else {
         const error = await response.json();
-        toast.error(`Error: ${error.error}`);
+        toast.error(`Error: ${error.detail || 'Failed to create admin'}`);
       }
     } catch (error) {
-      console.error('Error assigning admin:', error);
-      toast.error('Failed to assign admin. Please try again.');
+      console.error('Error creating admin:', error);
+      toast.error('Failed to create admin. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      community_id: '',
+      admin_email: '',
+      admin_name: ''
+    });
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-modal-small" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-overlay">
+      <div className="drawer-content create-admin-drawer">
         <div className="drawer-header">
-          <h2 className="drawer-title">Assign Community Admin</h2>
-          <p className="drawer-description">Give admin access to a user for a specific community</p>
+          <h2 className="drawer-title">Create Community Admin</h2>
+          <Button variant="ghost" onClick={onClose}>
+            <X size={20} />
+          </Button>
         </div>
 
-        <div className="drawer-content">
-          <form onSubmit={handleSubmit} className="form-container">
-            <div className="form-group">
+        <form onSubmit={handleSubmit} className="drawer-form">
+          <div className="form-grid">
+            <div className="form-group full-width">
               <label className="form-label">Community *</label>
               <select
                 value={formData.community_id}
                 onChange={(e) => setFormData(prev => ({ ...prev, community_id: e.target.value }))}
-                className="form-select"
+                className="community-select"
                 required
               >
-                <option value="">Select a community</option>
+                <option value="">Select Community</option>
                 {communities.map(community => (
                   <option key={community.id} value={community.id}>
-                    {community.name}
+                    {community.name} ({community.platform_type})
                   </option>
                 ))}
               </select>
@@ -575,7 +613,6 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, admin_email: e.target.value }))}
                 placeholder="admin@iiit.ac.in"
                 required
-                className="form-input"
               />
             </div>
 
@@ -584,39 +621,40 @@ const CreateAdminDrawer = ({ isOpen, onClose, onSuccess, communities }) => {
               <Input
                 value={formData.admin_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, admin_name: e.target.value }))}
-                placeholder="Admin Full Name"
+                placeholder="Full Name"
                 required
-                className="form-input"
               />
             </div>
+          </div>
 
-            <div className="form-actions">
-              <Button type="button" variant="outline" onClick={onClose} className="btn-cancel">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading} className="btn-submit">
-                {loading ? 'Assigning...' : 'Assign Admin'}
-              </Button>
-            </div>
-          </form>
-        </div>
+          <div className="drawer-actions">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Creating...' : 'Create Admin'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
 // Community Admin Management Component
-const CommunityAdminManagement = ({ isOpen, community, onClose }) => {
+const CommunityAdminManagement = ({ isOpen, community, onClose, onRemoveAdmin }) => {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen && community) {
-      fetchCommunityAdmins();
+      fetchAdmins();
     }
   }, [isOpen, community]);
 
-  const fetchCommunityAdmins = async () => {
+  const fetchAdmins = async () => {
+    if (!community) return;
+
     setLoading(true);
     try {
       const response = await fetch(`/api/connect/communities/${community.id}/admins`, {
@@ -625,105 +663,69 @@ const CommunityAdminManagement = ({ isOpen, community, onClose }) => {
       if (response.ok) {
         const data = await response.json();
         setAdmins(data);
+      } else {
+        toast.error('Failed to fetch admins');
       }
     } catch (error) {
-      console.error('Error fetching community admins:', error);
+      console.error('Error fetching admins:', error);
+      toast.error('Failed to fetch admins');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRemoveAdmin = async (adminId) => {
-    setPendingRemoveAdminId(adminId);
-    setShowRemoveAdminDialog(true);
-  };
-
-  const confirmRemoveAdmin = async () => {
-    if (!pendingRemoveAdminId) return;
-
-    try {
-      const response = await fetch(`/api/connect/community-admins/${pendingRemoveAdminId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        toast.success('Admin removed successfully!');
-        fetchCommunityAdmins(); // Refresh the list
-      } else {
-        const error = await response.json();
-        toast.error(`Error: ${error.message || 'Failed to remove admin'}`);
-      }
-    } catch (error) {
-      console.error('Error removing admin:', error);
-      toast.error('Failed to remove admin. Please try again.');
-    } finally {
-      setShowRemoveAdminDialog(false);
-      setPendingRemoveAdminId(null);
-    }
-  };
-
-  if (!isOpen) return null;
+  if (!isOpen || !community) return null;
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-overlay">
+      <div className="drawer-content admin-management-drawer">
         <div className="drawer-header">
-          <h2 className="drawer-title">Manage Admins - {community?.name}</h2>
-          <p className="drawer-description">View and manage community administrators</p>
+          <h2 className="drawer-title">Manage Admins - {community.name}</h2>
+          <Button variant="ghost" onClick={onClose}>
+            <X size={20} />
+          </Button>
         </div>
 
-        <div className="drawer-content">
+        <div className="drawer-body">
           {loading ? (
             <div className="loading-container">
               <div className="loading-spinner"></div>
               <span className="loading-text">Loading admins...</span>
             </div>
           ) : (
-            <div className="admins-list">
+            <>
               {admins.length === 0 ? (
                 <div className="empty-state">
-                  <div className="empty-icon">👥</div>
-                  <h3 className="empty-title">No Admins Found</h3>
-                  <p className="empty-subtitle">
-                    This community doesn't have any assigned admins yet.
-                  </p>
+                  <Users size={48} />
+                  <h3>No Admins Assigned</h3>
+                  <p>This community doesn't have any admins yet.</p>
                 </div>
               ) : (
-                <div className="admins-grid">
-                  {admins.map((admin) => (
-                    <div key={admin.id} className="admin-card">
+                <div className="admins-list">
+                  {admins.map(admin => (
+                    <div key={admin.id} className="admin-item">
                       <div className="admin-info">
                         <h4 className="admin-name">{admin.admin_name}</h4>
                         <p className="admin-email">{admin.admin_email}</p>
-                        <p className="admin-meta">
-                          Assigned by: {admin.assigned_by}
-                        </p>
-                        <p className="admin-date">
-                          {new Date(admin.created_at).toLocaleDateString()}
-                        </p>
+                        {admin.assigned_by && (
+                          <p className="assigned-by">Assigned by: {admin.assigned_by}</p>
+                        )}
                       </div>
-                      <div className="admin-actions">
-                        <button
-                          onClick={() => handleRemoveAdmin(admin.id)}
-                          className="remove-btn"
-                          title="Remove Admin"
-                        >
-                          <Trash2 className="icon" />
-                        </button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onRemoveAdmin(admin.id)}
+                        className="remove-admin-btn"
+                      >
+                        <Trash2 size={16} />
+                        Remove
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
+            </>
           )}
-
-          <div className="drawer-actions">
-            <Button onClick={onClose} className="btn-cancel">
-              Close
-            </Button>
-          </div>
         </div>
       </div>
     </div>
@@ -735,23 +737,23 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    platform_type: 'discord',
-    tags: '',
+    platform_type: '',
+    tags: [],
     member_count: 0,
     invite_link: '',
     identifier_format_instruction: '',
     icon: ''
   });
+  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [description, setDescription] = useState(community?.description || "");
 
   useEffect(() => {
     if (community) {
       setFormData({
         name: community.name || '',
         description: community.description || '',
-        platform_type: community.platform_type || 'discord',
-        tags: community.tags ? community.tags.join(', ') : '',
+        platform_type: community.platform_type || '',
+        tags: community.tags || [],
         member_count: community.member_count || 0,
         invite_link: community.invite_link || '',
         identifier_format_instruction: community.identifier_format_instruction || '',
@@ -760,31 +762,18 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
     }
   }, [community]);
 
-  const handleDescriptionChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= 512) {
-      setDescription(value);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const submitData = {
-        ...formData,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        member_count: parseInt(formData.member_count) || 0
-      };
-
       const response = await fetch(`/api/connect/communities/${community.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(submitData)
+        body: JSON.stringify(formData)
       });
 
       if (response.ok) {
@@ -792,9 +781,7 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
         onSuccess();
       } else {
         const error = await response.json();
-        console.error('Backend validation error:', error);
-        const errorMessage = error.detail?.[0]?.msg || error.detail || error.message || 'Unknown validation error';
-        toast.error(`Error: ${errorMessage}`);
+        toast.error(`Error: ${error.detail || 'Failed to update community'}`);
       }
     } catch (error) {
       console.error('Error updating community:', error);
@@ -804,121 +791,157 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
     }
   };
 
-  if (!isOpen) return null;
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tagInput.trim()]
+      }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  if (!isOpen || !community) return null;
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-overlay">
+      <div className="drawer-content edit-community-drawer">
         <div className="drawer-header">
           <h2 className="drawer-title">Edit Community</h2>
-          <p className="drawer-description">Update community information</p>
+          <Button variant="ghost" onClick={onClose}>
+            <X size={20} />
+          </Button>
         </div>
 
-        <div className="drawer-content">
-          <form onSubmit={handleSubmit} className="form-container">
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Community Name *</label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., IIITH Alumni Discord"
-                  required
-                  className="form-input"
-                />
-              </div>
+        <form onSubmit={handleSubmit} className="drawer-form">
+          <div className="form-grid">
+            <div className="form-group">
+              <label className="form-label">Community Name *</label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter community name"
+                required
+              />
+            </div>
 
-              <div className="form-group">
-                <label className="form-label">Platform *</label>
-                <select
-                  value={formData.platform_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, platform_type: e.target.value }))}
-                  className="form-select"
-                >
-                  {platformOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
+            <div className="form-group">
+              <label className="form-label">Platform Type *</label>
+              <select
+                value={formData.platform_type}
+                onChange={(e) => setFormData(prev => ({ ...prev, platform_type: e.target.value }))}
+                className="platform-select"
+                required
+              >
+                <option value="">Select Platform</option>
+                {platformOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group full-width">
+              <label className="form-label">Description *</label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe the community purpose and guidelines"
+                required
+                rows={3}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Member Count</label>
+              <Input
+                type="number"
+                value={formData.member_count}
+                onChange={(e) => setFormData(prev => ({ ...prev, member_count: parseInt(e.target.value) || 0 }))}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Icon (Emoji)</label>
+              <Input
+                value={formData.icon}
+                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                placeholder="🎮"
+                maxLength={1}
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label className="form-label">Invite Link</label>
+              <Input
+                value={formData.invite_link}
+                onChange={(e) => setFormData(prev => ({ ...prev, invite_link: e.target.value }))}
+                placeholder="https://discord.gg/example"
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label className="form-label">Join Instructions *</label>
+              <Textarea
+                value={formData.identifier_format_instruction}
+                onChange={(e) => setFormData(prev => ({ ...prev, identifier_format_instruction: e.target.value }))}
+                placeholder="Instructions for how users should format their identifiers when joining"
+                required
+                rows={3}
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label className="form-label">Tags</label>
+              <div className="tags-input-container">
+                <div className="tags-input-wrapper">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Add a tag"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  />
+                  <Button type="button" onClick={addTag} disabled={!tagInput.trim()}>
+                    Add
+                  </Button>
+                </div>
+                <div className="tags-list">
+                  {formData.tags.map(tag => (
+                    <Badge key={tag} variant="secondary" className="tag">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="tag-remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    </Badge>
                   ))}
-                </select>
-              </div>
-
-              <div className="form-group full-width">
-                <label className="form-label">Description *</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe the community and its purpose..."
-                  required
-                  className="form-textarea"
-                  rows={3}
-                />
-                <p className="char-count">GAY{formData.description.length}/512 characters</p>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Member Count</label>
-                <Input
-                  type="number"
-                  value={formData.member_count}
-                  onChange={(e) => setFormData(prev => ({ ...prev, member_count: e.target.value }))}
-                  placeholder="0"
-                  min="0"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Tags (comma-separated)</label>
-                <Input
-                  value={formData.tags}
-                  onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                  placeholder="e.g., tech, networking, alumni"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group full-width">
-                <label className="form-label">Invite Link</label>
-                <Input
-                  value={formData.invite_link}
-                  onChange={(e) => setFormData(prev => ({ ...prev, invite_link: e.target.value }))}
-                  placeholder="https://discord.gg/..."
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group full-width">
-                <label className="form-label">Identifier Format Instructions</label>
-                <Input
-                  value={formData.identifier_format_instruction}
-                  onChange={(e) => setFormData(prev => ({ ...prev, identifier_format_instruction: e.target.value }))}
-                  placeholder="e.g., Use your IIITH email format"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group full-width">
-                <label className="form-label">Icon URL</label>
-                <Input
-                  value={formData.icon}
-                  onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-                  placeholder="https://example.com/icon.png"
-                  className="form-input"
-                />
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="drawer-actions">
-              <Button type="button" onClick={onClose} className="btn-cancel">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading} className="btn-submit">
-                {loading ? 'Updating...' : 'Update Community'}
-              </Button>
-            </div>
-          </form>
-        </div>
+          <div className="drawer-actions">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Community'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -926,6 +949,7 @@ const EditCommunityDrawer = ({ isOpen, community, onClose, onSuccess, platformOp
 
 // Delete Community Modal Component
 const DeleteCommunityModal = ({ isOpen, community, onClose, onSuccess }) => {
+  const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
@@ -933,6 +957,8 @@ const DeleteCommunityModal = ({ isOpen, community, onClose, onSuccess }) => {
 
     setLoading(true);
     try {
+      // Note: The backend doesn't seem to have a delete endpoint yet
+      // This would need to be implemented in the backend
       const response = await fetch(`/api/connect/communities/${community.id}`, {
         method: 'DELETE',
         credentials: 'include'
@@ -943,7 +969,7 @@ const DeleteCommunityModal = ({ isOpen, community, onClose, onSuccess }) => {
         onSuccess();
       } else {
         const error = await response.json();
-        toast.error(`Error: ${error.message || 'Failed to delete community'}`);
+        toast.error(`Error: ${error.detail || 'Failed to delete community'}`);
       }
     } catch (error) {
       console.error('Error deleting community:', error);
@@ -955,41 +981,51 @@ const DeleteCommunityModal = ({ isOpen, community, onClose, onSuccess }) => {
 
   if (!isOpen || !community) return null;
 
+  const isConfirmValid = confirmText === community.name;
+
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-modal-small" onClick={(e) => e.stopPropagation()}>
-        <div className="drawer-header">
-          <h2 className="drawer-title">Delete Community</h2>
-          <p className="drawer-description">This action cannot be undone</p>
+    <div className="modal-overlay">
+      <div className="modal-content delete-community-modal">
+        <div className="modal-header">
+          <h2 className="modal-title">Delete Community</h2>
+          <Button variant="ghost" onClick={onClose}>
+            <X size={20} />
+          </Button>
         </div>
 
-        <div className="drawer-content">
-          <div className="delete-confirmation">
-            <p className="delete-warning">
-              Are you sure you want to delete the community <strong>"{community.name}"</strong>?
+        <div className="modal-body">
+          <div className="warning-section">
+            <div className="warning-icon">⚠️</div>
+            <h3>This action cannot be undone</h3>
+            <p>
+              This will permanently delete the community "{community.name}" and all associated data.
             </p>
-            <p className="delete-details">
-              This will permanently remove:
-            </p>
-            <ul className="delete-list">
-              <li>Community information and settings</li>
-              <li>All assigned administrators</li>
-              <li>Member data and statistics</li>
-            </ul>
           </div>
 
-          <div className="drawer-actions">
-            <Button onClick={onClose} className="btn-cancel">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDelete}
-              disabled={loading}
-              className="btn-delete"
-            >
-              {loading ? 'Deleting...' : 'Delete Community'}
-            </Button>
+          <div className="confirm-section">
+            <label className="confirm-label">
+              Type the community name to confirm:
+            </label>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={community.name}
+              className="confirm-input"
+            />
           </div>
+        </div>
+
+        <div className="modal-actions">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={!isConfirmValid || loading}
+          >
+            {loading ? 'Deleting...' : 'Delete Community'}
+          </Button>
         </div>
       </div>
     </div>
