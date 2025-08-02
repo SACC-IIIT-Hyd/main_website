@@ -309,9 +309,7 @@ const CommunityManagement = ({ community }) => {
                   <CheckCircle className="result-icon success" />
                   <div className="result-details">
                     <h4>Request Found!</h4>
-                    <p><strong>User:</strong> {verificationResult.user_name}</p>
-                    <p><strong>Email:</strong> {verificationResult.user_email}</p>
-                    <p><strong>Request Date:</strong> {new Date(verificationResult.request_date).toLocaleDateString()}</p>
+                    <p>A person with the identifier <strong>{identifierValue}</strong> has requested to join this community.</p>
                   </div>
                 </div>
               ) : (

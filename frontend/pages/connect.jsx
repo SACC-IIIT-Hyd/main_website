@@ -25,8 +25,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Search, Filter, Plus, Settings, Users } from 'lucide-react';
 import '@/styles/connect.scss';
 
@@ -181,12 +179,6 @@ const ConnectPage = () => {
       other: '🌐'
     };
     return iconMap[platform] || '🌐';
-  };
-
-  // Helper function to truncate text
-  const truncateText = (text, maxLength) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
   };
 
   if (loading) {
@@ -376,104 +368,82 @@ const ConnectPage = () => {
 
           {/* Communities List */}
           <div className="communities-list">
-            <Accordion type="single" collapsible className="accordion">
+            <div className="communities-grid">
               {communities.map((community) => (
-                <AccordionItem key={community.id} value={community.id.toString()}>
-                  <AccordionTrigger className="accordion-trigger">
-                    <Card className="community-card">
-                      <CardContent className="community-card-content">
-                        <div className="community-card-inner">
-                          <div className="community-info">
-                            <div className="platform-icon">
-                              {community.icon || getPlatformIcon(community.platform_type)}
-                            </div>
-                            <div className="community-details">
-                              <h3 className="community-name">{community.name}</h3>
-                              <p className="community-description">
-                                {truncateText(community.description, 100)}
-                              </p>
-                              <div className="community-meta">
-                                <Badge variant="secondary" className="platform-badge">{community.platform_type}</Badge>
-                                <div className="member-count">
-                                  <Users className="icon" />
-                                  {community.member_count} members
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="tags-container">
-                            {community.tags.slice(0, 3).map((tag, idx) => (
-                              <Badge key={idx} variant="outline" className="tag-badge">
-                                {tag}
-                              </Badge>
-                            ))}
-                            {community.tags.length > 3 && (
-                              <Badge variant="outline" className="tag-badge">
-                                +{community.tags.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
+                <Card key={community.id} className="community-card-enhanced">
+                  <CardContent className="community-card-content-enhanced">
+                    {/* Header Section */}
+                    <div className="community-header">
+                      <div className="community-info">
+                        <div className="platform-icon-large">
+                          {community.icon || getPlatformIcon(community.platform_type)}
                         </div>
-                      </CardContent>
-                    </Card>
-                  </AccordionTrigger>
-
-                  <AccordionContent>
-                    <Card className="community-details-card">
-                      <CardContent className="community-details-content">
-                        <div className="details-section">
-                          <div className="section-header">
-                            <h4 className="section-title">Full Description</h4>
-                          </div>
-                          <div className="section-content">
-                            <p className="description-text">{community.description}</p>
-                          </div>
-                        </div>
-
-                        <div className="platform-members-grid">
-                          <div className="detail-item">
-                            <h4>Platform</h4>
-                            <div className="detail-content">
-                              <span className="icon">{getPlatformIcon(community.platform_type)}</span>
-                              <span className="platform-text">{community.platform_type}</span>
-                            </div>
-                          </div>
-
-                          <div className="detail-item">
-                            <h4>Members</h4>
-                            <div className="detail-content">
+                        <div className="community-basic-details">
+                          <h3 className="community-name-enhanced">{community.name}</h3>
+                          <div className="community-meta-enhanced">
+                            <Badge variant="secondary" className="platform-badge-enhanced">
+                              {community.platform_type}
+                            </Badge>
+                            <div className="member-count-enhanced">
                               <Users className="icon" />
                               <span>{community.member_count} members</span>
                             </div>
                           </div>
                         </div>
+                      </div>
+                      <Button
+                        className="join-button-primary"
+                        disabled={community.join_request_exists}
+                        onClick={() => setShowJoinCommunityPanel(community)}
+                      >
+                        {community.join_request_exists ? 'Request Pending' : 'Join Community'}
+                      </Button>
+                    </div>
 
-                        {community.tags.length > 0 && (
-                          <div className="tags-section">
-                            <h4>Tags</h4>
-                            <div className="tags-grid">
-                              {community.tags.map((tag, idx) => (
-                                <Badge key={idx} variant="outline" className="tag-badge">{tag}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                    {/* Description Section */}
+                    <div className="community-description-section">
+                      <p className="community-description-enhanced">{community.description}</p>
+                    </div>
 
-                        <div className="join-section">
-                          <Button
-                            className="w-full join-community-btn"
-                            disabled={community.join_request_exists}
-                            onClick={() => setShowJoinCommunityPanel(community)}
-                          >
-                            {community.join_request_exists ? 'Request Pending' : 'Join Community'}
-                          </Button>
+                    {/* Invite Link Section */}
+                    {community.invite_link && (
+                      <div className="invite-link-section">
+                        <div className="invite-link-label">Invite Link:</div>
+                        <a
+                          href={community.invite_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="invite-link"
+                        >
+                          {community.invite_link}
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Instructions Section */}
+                    {community.identifier_format_instruction && (
+                      <div className="instructions-section">
+                        <div className="instructions-label">Instructions:</div>
+                        <p className="instructions-text">{community.identifier_format_instruction}</p>
+                      </div>
+                    )}
+
+                    {/* Tags Section */}
+                    {community.tags.length > 0 && (
+                      <div className="tags-section-enhanced">
+                        <div className="tags-grid-enhanced">
+                          {community.tags.map((tag, idx) => (
+                            <Badge key={idx} variant="outline" className="tag-badge-enhanced">
+                              {tag}
+                            </Badge>
+                          ))}
                         </div>
-                      </CardContent>
-                    </Card>
-                  </AccordionContent>
-                </AccordionItem>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               ))}
-            </Accordion>
+            </div>
 
             {communities.length === 0 && (
               <div className="no-communities">
@@ -631,9 +601,9 @@ const JoinCommunityPanel = ({ community, userProfile, onClose, onJoinSuccess }) 
         </div>
         <div className="drawer-content">
           <div className="p-4 pb-6 space-y-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Instructions:</h4>
-              <p className="text-sm text-blue-800">{community.identifier_format_instruction}</p>
+            <div className="instructions-box p-3 rounded-lg">
+              <h4 className="">Instructions:</h4>
+              <p className="">{community.identifier_format_instruction}</p>
             </div>
 
             {community.invite_link && (
