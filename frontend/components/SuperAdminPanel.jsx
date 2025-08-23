@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import ConfirmDialog from "./ConfirmDialog";
 import {
   X,
   Plus,
@@ -44,57 +30,7 @@ const Textarea = ({ className, ...props }) => (
   />
 );
 
-// ConfirmDialog for confirmations
-const ConfirmDialog = ({
-  open,
-  title,
-  description,
-  onConfirm,
-  onCancel,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
-  loading,
-}) => {
-  if (!open) return null;
-  return (
-    <div className="admin-panel-overlay">
-      <div className="super-admin-panel">
-        <div className="panel-container confirm-dialog-container">
-          <div className="panel-header">
-            <div>
-              <h1 className="panel-title">{title}</h1>
-              {description && (
-                <p className="panel-subtitle">Please confirm your action</p>
-              )}
-            </div>
-          </div>
-          <div className="panel-content">
-            <div className="form-section">
-              <p className="confirm-description">{description}</p>
-            </div>
-            <div className="action-buttons">
-              <Button
-                variant="outline"
-                onClick={onCancel}
-                className="btn-cancel"
-              >
-                {cancelText}
-              </Button>
-              <Button
-                onClick={onConfirm}
-                disabled={loading}
-                className="action-btn submit-button"
-              >
-                {loading ? "Submitting..." : confirmText}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+// SuperAdminPanel Component
 const SuperAdminPanel = ({ onClose }) => {
   const [communities, setCommunities] = useState([]);
   const [showCreateCommunity, setShowCreateCommunity] = useState(false);

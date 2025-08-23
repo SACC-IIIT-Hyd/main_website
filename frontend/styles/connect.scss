@@ -1,5 +1,7 @@
-/* Profile Panel Overlay Styles */
-.profile-panel-overlay {
+/* Common Modal Styles for all panels */
+.profile-panel-overlay,
+.super-admin-panel,
+.community-admin-panel {
   position: fixed;
   top: 0;
   left: 0;
@@ -14,7 +16,8 @@
   animation: fadeIn 0.3s ease;
 }
 
-.profile-panel-modal {
+.profile-panel-modal,
+.panel-container {
   min-width: 340px;
   max-width: 600px;
   width: 90vw;
@@ -32,72 +35,285 @@
   overflow: hidden;
   backdrop-filter: blur(20px);
   animation: slideUp 0.3s ease;
+}
 
-  .modal-header {
-    padding: 2rem 2.5rem 1.5rem 2.5rem;
-    border-bottom: 1px solid rgba(108, 91, 123, 0.3);
-    background: linear-gradient(
-      135deg,
-      rgba(108, 91, 123, 0.08) 0%,
-      rgba(239, 223, 194, 0.04) 100%
-    );
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.panel-header {
+  padding: 2rem 2.5rem 1.5rem 2.5rem;
+  border-bottom: 1px solid rgba(108, 91, 123, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(108, 91, 123, 0.08) 0%,
+    rgba(239, 223, 194, 0.04) 100%
+  );
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    .modal-title {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #6c5b7b;
-      margin: 0;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      font-family: "Montserrat", sans-serif;
+.panel-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #6c5b7b;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: "Montserrat", sans-serif;
+}
+
+.panel-subtitle {
+  color: rgba(239, 223, 194, 0.8);
+  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
+  font-weight: 400;
+}
+
+.close-button {
+  padding: 0.75rem;
+  background: rgba(108, 91, 123, 0.2);
+  border: 2px solid #6c5b7b;
+  border-radius: 12px;
+  color: #6c5b7b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+
+  &:hover {
+    background: rgba(108, 91, 123, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(108, 91, 123, 0.3);
+  }
+}
+
+.panel-content {
+  padding: 2rem 2.5rem;
+  color: #efdfc2;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+  font-family: "Montserrat", sans-serif;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(108, 91, 123, 0.4);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(108, 91, 123, 0.6);
+    }
+  }
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(108, 91, 123, 0.08);
+  border: 1px solid rgba(108, 91, 123, 0.3);
+  border-radius: 15px;
+  backdrop-filter: blur(5px);
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #efdfc2;
+    margin: 0 0 1rem 0;
+  }
+
+  .section-description {
+    color: rgba(239, 223, 194, 0.8);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.action-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid rgba(108, 91, 123, 0.5);
+  border-radius: 12px;
+  background: rgba(108, 91, 123, 0.15);
+  color: #efdfc2;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  backdrop-filter: blur(5px);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: #6c5b7b;
+    background: rgba(108, 91, 123, 0.2);
+    color: #fff;
+  }
+
+  &.primary {
+    background: rgba(108, 91, 123, 0.2);
+    border-color: #6c5b7b;
+    color: #efdfc2;
+
+    &:hover {
+      background: rgba(108, 91, 123, 0.3);
+      color: #fff;
+    }
+  }
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.radio-input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6c5b7b;
+}
+
+.radio-text {
+  color: #efdfc2;
+  font-size: 0.95rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-label {
+  display: block;
+  color: #efdfc2;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(108, 91, 123, 0.4);
+  border-radius: 10px;
+  background: rgba(31, 18, 26, 0.8);
+  color: #efdfc2;
+  font-family: "Montserrat", sans-serif;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+
+  &:focus {
+    outline: none;
+    border-color: #6c5b7b;
+    background: rgba(31, 18, 26, 0.9);
+    box-shadow: 0 0 20px rgba(108, 91, 123, 0.2);
+  }
+
+  &::placeholder {
+    color: rgba(239, 223, 194, 0.5);
+  }
+}
+
+.input-hint {
+  font-size: 0.8rem;
+  color: rgba(239, 223, 194, 0.6);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.alert {
+  padding: 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 1px solid;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  .alert-icon {
+    width: 24px;
+    height: 24px;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  .alert-content {
+    flex: 1;
+
+    .alert-title {
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
     }
 
-    .close-button {
-      padding: 0.75rem;
-      background: rgba(108, 91, 123, 0.2);
-      border: 2px solid #6c5b7b;
-      border-radius: 12px;
-      color: #6c5b7b;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 44px;
-      min-height: 44px;
-
-      &:hover {
-        background: rgba(108, 91, 123, 0.3);
-        transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(108, 91, 123, 0.3);
-      }
+    .alert-message {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.4;
     }
   }
 
-  .modal-content {
-    padding: 2rem 2.5rem;
-    color: #efdfc2;
-    max-height: calc(90vh - 120px);
-    overflow-y: auto;
-    font-family: "Montserrat", sans-serif;
+  &.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+}
 
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
+.invite-link-section {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 10px;
 
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
+  .invite-link-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #22c55e;
+    margin-bottom: 0.5rem;
+  }
 
-    &::-webkit-scrollbar-thumb {
-      background: rgba(108, 91, 123, 0.4);
-      border-radius: 3px;
+  .invite-link {
+    color: #22c55e;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    word-break: break-all;
 
-      &:hover {
-        background: rgba(108, 91, 123, 0.6);
-      }
+    &:hover {
+      text-decoration: none;
     }
   }
 }
@@ -2770,36 +2986,4 @@
   min-height: calc(100vh - 140px);
   /* Adjust based on header/footer height */
   padding: 2rem 0;
-}
-
-/* Admin Panel Overlay Styles */
-.admin-panel-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(31, 18, 26, 0.8);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
-  animation: fadeIn 0.3s ease;
-}
-
-/* Adjustments for panels when they are overlays */
-.admin-panel-overlay .community-admin-panel,
-.admin-panel-overlay .super-admin-panel {
-  /* Remove any positioning that conflicts with the overlay */
-  position: relative;
-  top: auto;
-  left: auto;
-  right: auto;
-  bottom: auto;
-  width: 100%;
-  max-width: 1200px;
-  /* Or whatever max-width you prefer */
 }

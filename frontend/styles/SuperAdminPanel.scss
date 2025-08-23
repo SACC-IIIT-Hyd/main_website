@@ -1,5 +1,15 @@
 /* Enhanced Styles for Admin Panel Buttons and Modals - Solid Backgrounds */
 
+/* Define custom properties with purple color scheme */
+:root {
+  --super-admin-primary: #6c5b7b;
+  --super-admin-bg: rgba(20, 14, 23, 0.8);
+  --super-admin-border: #6c5b7b;
+  --super-admin-card: rgba(108, 91, 123, 0.1);
+  --danger-color: #9c27b0;
+  --text-light: #efdfc2;
+}
+
 /* ========================================
    MAIN PANEL STYLES
 ======================================== */
@@ -126,7 +136,7 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
 
     .action-btn {
@@ -654,7 +664,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(15px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -897,11 +908,13 @@
     }
 
     .action-buttons {
-      flex-direction: column;
+      display: flex;
+      flex-direction: row;
       gap: 0.75rem;
+      justify-content: center;
 
       .action-btn {
-        width: 100%;
+        width: auto;
         justify-content: center;
       }
     }
@@ -1036,13 +1049,16 @@
   }
 
   .action-buttons {
+    display: flex;
+    gap: 1rem;
     margin-top: 1.5rem;
+    justify-content: center;
 
     .submit-button {
       background: linear-gradient(
         135deg,
         var(--super-admin-primary) 0%,
-        #a86830 100%
+        var(--super-admin-primary) 100%
       );
       border-color: var(--super-admin-primary);
     }
