@@ -620,7 +620,6 @@ class ConnectService:
             community = CommunityORM(
                 name=community_data.name,
                 description=community_data.description,
-                icon=community_data.icon,
                 platform_type=community_data.platform_type,
                 tags=community_data.tags,
                 member_count=community_data.member_count,
@@ -645,7 +644,6 @@ class ConnectService:
                 id=community.id,
                 name=community.name,
                 description=community.description,
-                icon=community.icon,
                 platform_type=community.platform_type,
                 tags=community.tags,
                 member_count=community.member_count,
@@ -722,8 +720,6 @@ class ConnectService:
                 community.name = community_data.name
             if community_data.description is not None:
                 community.description = community_data.description
-            if community_data.icon is not None:
-                community.icon = community_data.icon
             if community_data.platform_type is not None:
                 community.platform_type = community_data.platform_type
             if community_data.tags is not None:
@@ -751,7 +747,6 @@ class ConnectService:
                 id=community.id,
                 name=community.name,
                 description=community.description,
-                icon=community.icon,
                 platform_type=community.platform_type,
                 tags=community.tags,
                 member_count=community.member_count,
@@ -811,7 +806,6 @@ class ConnectService:
                 id=community.id,
                 name=community.name,
                 description=community.description,
-                icon=community.icon,
                 platform_type=community.platform_type,
                 tags=community.tags,
                 member_count=community.member_count,
@@ -911,7 +905,6 @@ class ConnectService:
                         id=community.id,
                         name=community.name,
                         description=community.description,
-                        icon=community.icon,
                         platform_type=community.platform_type,
                         tags=community.tags,
                         member_count=community.member_count,

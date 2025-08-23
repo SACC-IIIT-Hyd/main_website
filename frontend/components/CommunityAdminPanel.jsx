@@ -144,7 +144,7 @@ const CommunityAdminPanel = ({ onClose }) => {
                     <div className="card-header">
                       <div className="community-info">
                         <span className="community-icon">
-                          {community.icon || <Globe size={24} />}
+                          <Globe size={24} />
                         </span>
                         <h3 className="community-name">{community.name}</h3>
                       </div>
@@ -205,7 +205,6 @@ const CommunityManagement = ({ community }) => {
     member_count: community.member_count,
     invite_link: community.invite_link || "",
     identifier_format_instruction: community.identifier_format_instruction,
-    icon: community.icon || "",
   });
   const [identifierValue, setIdentifierValue] = useState("");
   const [verificationResult, setVerificationResult] = useState(null);
@@ -240,8 +239,7 @@ const CommunityManagement = ({ community }) => {
       } else {
         const error = await response.json();
         toast.error(
-          `Error: ${
-            error.error || error.detail || "Failed to update community"
+          `Error: ${error.error || error.detail || "Failed to update community"
           }`
         );
       }
@@ -276,8 +274,7 @@ const CommunityManagement = ({ community }) => {
       } else {
         const error = await response.json();
         toast.error(
-          `Error: ${
-            error.error || error.detail || "Failed to verify identifier"
+          `Error: ${error.error || error.detail || "Failed to verify identifier"
           }`
         );
       }
@@ -319,9 +316,8 @@ const CommunityManagement = ({ community }) => {
 
           {verificationResult && (
             <div
-              className={`verification-result ${
-                verificationResult.found ? "found" : "not-found"
-              }`}
+              className={`verification-result ${verificationResult.found ? "found" : "not-found"
+                }`}
             >
               {verificationResult.found ? (
                 <div className="result-content">
@@ -454,18 +450,6 @@ const CommunityManagement = ({ community }) => {
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Icon</label>
-              <Input
-                value={editData.icon}
-                onChange={(e) =>
-                  setEditData((prev) => ({ ...prev, icon: e.target.value }))
-                }
-                placeholder="🌐 (emoji or leave blank for default)"
-                className="form-input"
-              />
-            </div>
-
             <div className="form-actions">
               <Button
                 onClick={handleUpdate}
@@ -483,7 +467,7 @@ const CommunityManagement = ({ community }) => {
               <div className="card-header">
                 <div className="community-info">
                   <span className="community-icon">
-                    {community.icon || "🌐"}
+                    🌐
                   </span>
                   <h3 className="community-name">{community.name}</h3>
                 </div>

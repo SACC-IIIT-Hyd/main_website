@@ -89,7 +89,6 @@ class CommunityORM(Base):
         Integer, primary_key=True, index=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
-    icon: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
     platform_type: Mapped[str] = mapped_column(
         String(50), nullable=False, index=True)
     tags: Mapped[List[str]] = mapped_column(JSON, default=list, nullable=False)
@@ -176,8 +175,6 @@ class Community(BaseModel):
     name: str = Field(..., max_length=100, description="Community name")
     description: str = Field(..., max_length=500,
                              description="Community description")
-    icon: Optional[str] = Field(
-        None, max_length=1, description="Community icon emoji")
     platform_type: CommunityType = Field(
         ..., description="Platform type (discord, whatsapp, etc.)")
     tags: List[str] = Field(default_factory=list,
@@ -274,8 +271,6 @@ class CommunityCreate(BaseModel):
         None, max_length=500, description="Invite link")
     identifier_format_instruction: str = Field(
         ..., max_length=1000, min_length=10, description="Join instructions")
-    icon: Optional[str] = Field(
-        None, max_length=1, description="Icon emoji")
 
 
 class CommunityUpdate(BaseModel):
@@ -288,7 +283,6 @@ class CommunityUpdate(BaseModel):
     invite_link: Optional[str] = Field(None, max_length=500)
     identifier_format_instruction: Optional[str] = Field(
         None, max_length=1000, min_length=10)
-    icon: Optional[str] = Field(None, max_length=1)
 
 
 class CommunityAdminCreate(BaseModel):
@@ -304,7 +298,6 @@ class CommunityResponse(BaseModel):
     id: int
     name: str
     description: str
-    icon: Optional[str]
     platform_type: str
     tags: List[str]
     member_count: int

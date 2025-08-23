@@ -23,9 +23,8 @@ import "@/styles/SuperAdminPanel.scss";
 // Simple Textarea component
 const Textarea = ({ className, ...props }) => (
   <textarea
-    className={`border border-gray-300 rounded-md p-2 w-full ${
-      className || ""
-    }`}
+    className={`border border-gray-300 rounded-md p-2 w-full ${className || ""
+      }`}
     {...props}
   />
 );
@@ -160,7 +159,7 @@ const SuperAdminPanel = ({ onClose }) => {
                       <div className="card-header">
                         <div className="community-info">
                           <span className="community-icon">
-                            {community.icon || <Globe size={24} />}
+                            <Globe size={24} />
                           </span>
                           <h3 className="community-name">{community.name}</h3>
                         </div>
@@ -345,7 +344,6 @@ const CreateCommunityDrawer = ({
     member_count: 0,
     invite_link: "",
     identifier_format_instruction: "",
-    icon: "",
   });
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -389,7 +387,6 @@ const CreateCommunityDrawer = ({
       member_count: 0,
       invite_link: "",
       identifier_format_instruction: "",
-      icon: "",
     });
     setTagInput("");
   };
@@ -515,18 +512,6 @@ const CreateCommunityDrawer = ({
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Icon (Emoji)</label>
-                    <Input
-                      value={formData.icon}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          icon: e.target.value,
-                        }))
-                      }
-                      placeholder="🎮"
-                      maxLength={1}
-                    />
                   </div>
 
                   <div className="form-group full-width">
@@ -917,7 +902,6 @@ const EditCommunityDrawer = ({
     member_count: 0,
     invite_link: "",
     identifier_format_instruction: "",
-    icon: "",
   });
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -933,7 +917,6 @@ const EditCommunityDrawer = ({
         invite_link: community.invite_link || "",
         identifier_format_instruction:
           community.identifier_format_instruction || "",
-        icon: community.icon || "",
       });
     }
   }, [community]);
@@ -1087,20 +1070,6 @@ const EditCommunityDrawer = ({
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Icon (Emoji)</label>
-                    <Input
-                      value={formData.icon}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          icon: e.target.value,
-                        }))
-                      }
-                      placeholder="🎮"
-                      maxLength={1}
-                    />
-                  </div>
 
                   <div className="form-group full-width">
                     <label className="form-label">Invite Link</label>

@@ -175,17 +175,7 @@ const ConnectPage = () => {
 
   // Helper function to get platform icons
   const getPlatformIcon = (platform) => {
-    const iconMap = {
-      discord: "🎮",
-      whatsapp: "💬",
-      facebook: "📘",
-      teams: "🏢",
-      slack: "💼",
-      telegram: "✈️",
-      linkedin: "💼",
-      other: "🌐",
-    };
-    return iconMap[platform] || "🌐";
+    return "�"; // Use a generic globe icon for all platforms
   };
 
   if (loading) {
@@ -410,8 +400,7 @@ const ConnectPage = () => {
                     <div className="community-header">
                       <div className="community-info">
                         <div className="platform-icon-large">
-                          {community.icon ||
-                            getPlatformIcon(community.platform_type)}
+                          {getPlatformIcon(community.platform_type)}
                         </div>
                         <div className="community-basic-details">
                           <h3 className="community-name-enhanced">
