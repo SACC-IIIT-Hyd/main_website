@@ -315,24 +315,28 @@ const ConnectPage = () => {
               <Users className="icon" />
               <span className="btn-text">My Profile</span>
             </Button>
-            {userRoles.is_community_admin && (
+            {(userRoles.is_community_admin || userRoles.is_super_admin) && (
               <Button
-                className="admin-btn community-admin-btn"
+                className="admin-btn"
                 onClick={() => setShowCommunityAdminPanel(true)}
                 title="Community Admin Panel"
               >
                 <Settings className="icon" />
-                <span className="btn-text">Community Admin</span>
+                <span className="btn-text">
+                  {userRoles.is_super_admin
+                    ? "Manage All Communities"
+                    : "Community Admin"}
+                </span>
               </Button>
             )}
             {userRoles.is_super_admin && (
               <Button
-                className="admin-btn super-admin-btn"
+                className="admin-btn"
                 onClick={() => setShowSuperAdminPanel(true)}
                 title="Super Admin Panel"
               >
                 <Plus className="icon" />
-                <span className="btn-text">Super Admin</span>
+                <span className="btn-text">Global Admin Settings</span>
               </Button>
             )}
           </div>

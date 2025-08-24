@@ -89,6 +89,7 @@ class ConnectService:
     async def _is_community_admin(self, email: str, community_id: Optional[int] = None) -> bool:
         """
         Check if user is a community admin.
+        Super admins are considered admins for all communities.
 
         Args:
             email: User's email address
@@ -97,6 +98,10 @@ class ConnectService:
         Returns:
             bool: True if user is community admin
         """
+        # Super admins are admins for all communities
+        if self._is_super_admin(email):
+            return True
+            
         async with get_db_session() as session:
             query = select(CommunityAdminORM).where(
                 CommunityAdminORM.admin_email == email)
@@ -111,6 +116,7 @@ class ConnectService:
     async def _get_user_admin_communities(self, email: str) -> List[int]:
         """
         Get list of community IDs that user is admin for.
+        For super admins, this returns ALL community IDs.
 
         Args:
             email: User's email address
@@ -118,6 +124,14 @@ class ConnectService:
         Returns:
             List[int]: List of community IDs
         """
+        # If user is super admin, return all community IDs
+        if self._is_super_admin(email):
+            async with get_db_session() as session:
+                query = select(CommunityORM.id)
+                result = await session.execute(query)
+                return [row[0] for row in result.fetchall()]
+        
+        # Otherwise, return only communities where user is an admin
         async with get_db_session() as session:
             query = select(CommunityAdminORM.community_id).where(
                 CommunityAdminORM.admin_email == email
