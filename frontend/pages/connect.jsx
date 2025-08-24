@@ -6,6 +6,7 @@ import CommunityAdminPanel from "@/components/CommunityAdminPanel";
 import ProfilePanel from "@/components/ProfilePanel";
 import JoinCommunityPanel from "@/components/JoinCommunityPanel";
 import Bottom from "@/components/footer";
+import { withAuth } from "@/lib/auth";
 import {
   Card,
   CardContent,
@@ -525,4 +526,4 @@ const ConnectPage = () => {
   );
 };
 
-export default ConnectPage;
+export default withAuth(ConnectPage);
