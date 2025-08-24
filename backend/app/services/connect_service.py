@@ -22,7 +22,7 @@ import hashlib
 from datetime import datetime
 from typing import List, Optional, Tuple
 from fastapi import HTTPException, status
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, func, Text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload, joinedload
 
@@ -890,10 +890,10 @@ class ConnectService:
                 query = query.where(
                     CommunityORM.platform_type == platform_filter)
 
-            # Apply tag filter (more complex due to JSON array)
+            # Apply tag filter (supports partial matching within tags)
             if tag_filter:
                 query = query.where(
-                    CommunityORM.tags.contains([tag_filter])
+                    func.cast(CommunityORM.tags, Text).ilike(f'%{tag_filter}%')
                 )
 
             # Apply sorting

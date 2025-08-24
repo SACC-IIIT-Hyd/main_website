@@ -81,6 +81,11 @@ const ConnectPage = () => {
     fetchCommunities();
   }, []);
 
+  // Auto-update communities when search or filters change
+  useEffect(() => {
+    fetchCommunities();
+  }, [searchTerm, platformFilter, tagFilter]);
+
   const fetchUserProfile = async () => {
     try {
       console.log("Debug: Fetching user profile...");
@@ -383,15 +388,6 @@ const ConnectPage = () => {
               onChange={(e) => setTagFilter(e.target.value)}
               className="tag-filter"
             />
-
-            <Button
-              onClick={fetchCommunities}
-              variant="outline"
-              className="apply-filters-button"
-            >
-              <Filter className="icon" />
-              Apply Filters
-            </Button>
           </div>
 
           {/* Communities List */}

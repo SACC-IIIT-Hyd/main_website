@@ -582,6 +582,7 @@
 /* Search and Filter Section */
 .search-filter-container {
   display: flex;
+  font-size: 1.3rem;
   gap: 1rem;
   margin-bottom: clamp(40px, 8vw, 60px);
   padding: 2rem;
@@ -598,7 +599,7 @@
   position: relative;
   flex: 2;
   min-width: 250px;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .search-icon {
@@ -614,6 +615,7 @@
 }
 
 .search-input {
+  font-size: 1.3rem;
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
   border: 2px solid rgba(108, 91, 123, 0.4);
@@ -638,9 +640,10 @@
 
 .platform-filter,
 .tag-filter {
+  font-size: 1.2rem;
   flex: 1;
   min-width: 150px;
-  max-width: 200px;
+  max-width: 250px;
   padding: 0.75rem 1rem;
   border: 2px solid rgba(108, 91, 123, 0.4);
   border-radius: 10px;
