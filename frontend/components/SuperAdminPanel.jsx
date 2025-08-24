@@ -171,6 +171,7 @@ const SuperAdminPanel = ({ onClose }) => {
                               setSelectedCommunityForAdmins(community)
                             }
                             title="Manage Admins"
+                            className="action-btn"
                           >
                             <Users size={16} />
                           </Button>
@@ -181,6 +182,7 @@ const SuperAdminPanel = ({ onClose }) => {
                               setSelectedCommunityForEdit(community)
                             }
                             title="Edit Community"
+                            className="action-btn"
                           >
                             <Edit size={16} />
                           </Button>
@@ -191,7 +193,7 @@ const SuperAdminPanel = ({ onClose }) => {
                               setSelectedCommunityForDelete(community)
                             }
                             title="Delete Community"
-                            className="delete-btn"
+                            className="action-btn"
                           >
                             <Trash2 size={16} />
                           </Button>

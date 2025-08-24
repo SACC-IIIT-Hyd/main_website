@@ -412,10 +412,10 @@
   justify-content: flex-end;
   align-items: center;
 
-  .action-btn,
-  button {
+  .action-btn {
     width: 36px;
     height: 36px;
+    color: white;
     padding: 0;
     border-radius: 8px;
     transition: all 0.3s ease;
@@ -439,65 +439,32 @@
       border-color: rgba(34, 197, 94, 0.4);
 
       &:hover {
-        background: var(--success-color);
-        color: var(--text-light);
-        border-color: var(--success-color);
-        box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+        color: rgba(34, 197, 94, 0.6);
+        box-shadow: 0 6px 10px rgba(34, 197, 94, 0.15);
       }
     }
 
     // Edit Button
     &[title*="Edit"] {
-      background: var(--super-admin-card);
-      color: var(--warning-color);
       border-color: rgba(251, 191, 36, 0.4);
 
       &:hover {
-        background: var(--warning-color);
-        color: var(--super-admin-bg);
-        border-color: var(--warning-color);
-        box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        color: rgba(251, 191, 36, 0.6);
+        box-shadow: 0 6px 10px rgba(251, 191, 36, 0.15);
       }
     }
 
     // Delete Button
-    &[title*="Delete"],
-    &.delete-btn {
+    &[title*="Delete"] {
       background: var(--super-admin-card);
-      color: var(--danger-color);
       border-color: rgba(220, 38, 38, 0.4);
 
       &:hover {
-        background: var(--danger-color);
-        color: var(--text-light);
-        border-color: var(--danger-color);
+        color: red;
+        border-color: red;
         box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
         animation: shake 0.3s ease-in-out;
       }
-    }
-
-    // Tooltip on hover
-    &::after {
-      content: attr(title);
-      position: absolute;
-      bottom: -2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--super-admin-bg);
-      color: var(--text-light);
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      border: 1px solid var(--super-admin-border);
-      z-index: 10;
-    }
-
-    &:hover::after {
-      opacity: 1;
     }
   }
 }
@@ -901,20 +868,6 @@
     }
   }
 
-  .card-actions {
-    gap: 0.25rem;
-
-    .action-btn,
-    button {
-      width: 32px;
-      height: 32px;
-
-      &::after {
-        display: none; // Hide tooltips on mobile
-      }
-    }
-  }
-
   .form-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -961,16 +914,6 @@
 
         .community-name {
           font-size: 1rem;
-        }
-      }
-
-      .card-actions {
-        gap: 0.25rem;
-
-        .action-btn,
-        button {
-          width: 28px;
-          height: 28px;
         }
       }
     }
