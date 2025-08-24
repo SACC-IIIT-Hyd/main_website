@@ -11,6 +11,7 @@ import {
   Edit,
   Save,
   Globe,
+  Building2,
 } from "lucide-react";
 import "@/styles/CommunityAdminPanel.scss";
 import { Toaster, toast } from "sonner";
@@ -19,21 +20,41 @@ const CommunityAdminPanel = ({ onClose }) => {
   const [adminCommunities, setAdminCommunities] = useState([]);
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
-    fetchAdminCommunities();
+    fetchUserRolesAndCommunities();
   }, []);
 
-  const fetchAdminCommunities = async () => {
+  const fetchUserRolesAndCommunities = async () => {
     try {
-      const response = await fetch("/api/connect/user-roles", {
+      // First, get user roles to check if super admin
+      const rolesResponse = await fetch("/api/connect/user-roles", {
         credentials: "include",
       });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.admin_communities && data.admin_communities.length > 0) {
-          // Fetch community details for each admin community
-          const communityPromises = data.admin_communities.map(
+
+      if (rolesResponse.ok) {
+        const rolesData = await rolesResponse.json();
+        setIsSuperAdmin(rolesData.is_super_admin);
+
+        if (rolesData.is_super_admin) {
+          // If super admin, fetch all communities
+          const communitiesResponse = await fetch("/api/connect/communities", {
+            credentials: "include",
+          });
+
+          if (communitiesResponse.ok) {
+            const communities = await communitiesResponse.json();
+            setAdminCommunities(communities);
+            setLoading(false);
+            return;
+          }
+        } else if (
+          rolesData.admin_communities &&
+          rolesData.admin_communities.length > 0
+        ) {
+          // For regular community admins, fetch only their assigned communities
+          const communityPromises = rolesData.admin_communities.map(
             async (communityId) => {
               const communityResponse = await fetch(
                 `/api/connect/communities/${communityId}`,
@@ -54,11 +75,11 @@ const CommunityAdminPanel = ({ onClose }) => {
           setAdminCommunities([]);
         }
       } else {
-        toast.error("Failed to fetch admin communities");
+        toast.error("Failed to fetch user roles");
       }
     } catch (error) {
-      console.error("Error fetching admin communities:", error);
-      toast.error("Failed to fetch admin communities");
+      console.error("Error fetching communities:", error);
+      toast.error("Failed to fetch communities");
     } finally {
       setLoading(false);
     }
@@ -111,7 +132,11 @@ const CommunityAdminPanel = ({ onClose }) => {
         <div className="panel-header">
           <div>
             <h1 className="panel-title">Community Admin Panel</h1>
-            <p className="panel-subtitle">Manage your assigned communities</p>
+            <p className="panel-subtitle">
+              {isSuperAdmin
+                ? "Manage all communities with super admin access"
+                : "Manage your assigned communities"}
+            </p>
           </div>
           <Button className="close-button" onClick={onClose}>
             <X size={20} />
@@ -177,10 +202,11 @@ const CommunityAdminPanel = ({ onClose }) => {
                   <div className="empty-icon">
                     <Building2 size={48} />
                   </div>
-                  <h3 className="empty-title">No Communities Assigned</h3>
+                  <h3 className="empty-title">No Communities Found</h3>
                   <p className="empty-subtitle">
-                    Contact a super admin to get community admin access for
-                    specific communities.
+                    {isSuperAdmin
+                      ? "No communities have been created yet. Use the 'Global Admin Settings' to create communities."
+                      : "Contact a super admin to get community admin access for specific communities."}
                   </p>
                 </div>
               )}
@@ -236,7 +262,8 @@ const CommunityManagement = ({ community }) => {
       } else {
         const error = await response.json();
         toast.error(
-          `Error: ${error.error || error.detail || "Failed to update community"
+          `Error: ${
+            error.error || error.detail || "Failed to update community"
           }`
         );
       }
@@ -271,7 +298,8 @@ const CommunityManagement = ({ community }) => {
       } else {
         const error = await response.json();
         toast.error(
-          `Error: ${error.error || error.detail || "Failed to verify identifier"
+          `Error: ${
+            error.error || error.detail || "Failed to verify identifier"
           }`
         );
       }
@@ -318,8 +346,9 @@ const CommunityManagement = ({ community }) => {
 
           {verificationResult && (
             <div
-              className={`verification-result ${verificationResult.found ? "found" : "not-found"
-                }`}
+              className={`verification-result ${
+                verificationResult.found ? "found" : "not-found"
+              }`}
             >
               {verificationResult.found ? (
                 <div className="result-content">

@@ -20,9 +20,11 @@ Example:
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException, status
+from sqlalchemy import select
 
 from app.api.dependencies import get_current_user
 from app.core.logging import get_logger
+from app.core.database import get_db_session
 from app.models.auth import UserResponse
 from app.models.connect import (
     # Response models
@@ -30,7 +32,9 @@ from app.models.connect import (
     IdentifierVerificationResponse,
     # Request models
     CommunityCreate, CommunityUpdate, UserProfileCreate,
-    CommunityAdminCreate, IdentifierCreate, IdentifierVerificationRequest
+    CommunityAdminCreate, IdentifierCreate, IdentifierVerificationRequest,
+    # ORM models
+    CommunityAdminORM
 )
 from app.services.connect_service import ConnectService
 
@@ -830,8 +834,21 @@ async def get_user_roles(
     # Get communities user is admin for
     admin_community_ids = await connect_service._get_user_admin_communities(user.email)
 
-    # Check if user is community admin
-    is_community_admin = len(admin_community_ids) > 0
+    # Check if user is community admin (not including super admin status)
+    # For UI purposes, we want to distinguish between regular community admins and super admins
+    # Super admins can act as community admins but might not be explicitly assigned as such
+    if is_super_admin:
+        # For super admins, get the list of communities they're explicitly assigned to as admins
+        async with get_db_session() as session:
+            query = select(CommunityAdminORM.community_id).where(
+                CommunityAdminORM.admin_email == user.email
+            )
+            result = await session.execute(query)
+            explicit_admin_communities = [row[0] for row in result.fetchall()]
+            is_community_admin = len(explicit_admin_communities) > 0
+    else:
+        # For regular users, check if they're assigned as community admins
+        is_community_admin = len(admin_community_ids) > 0
 
     roles = {
         "is_super_admin": is_super_admin,
