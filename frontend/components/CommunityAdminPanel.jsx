@@ -356,7 +356,7 @@ const CommunityManagement = ({ community }) => {
                   <div className="result-details">
                     <h4>Request Found!</h4>
                     <p>
-                      A person with the identifier{" "}
+                      An alumni with the identifier{" "}
                       <strong>{identifierValue}</strong> has requested to join
                       this community.
                     </p>

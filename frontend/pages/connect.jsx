@@ -19,12 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
-  Filter,
   Plus,
   Settings,
   Users,
-  X,
-  AlertCircle,
 } from "lucide-react";
 import "@/styles/connect.scss";
 
@@ -48,7 +45,7 @@ const ConnectPage = () => {
   });
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
   const [showCommunityAdminPanel, setShowCommunityAdminPanel] = useState(false);
-  const [showJoinCommunityPanel, setShowJoinCommunityPanel] = useState(null); // holds the community object
+  const [showJoinCommunityPanel, setShowJoinCommunityPanel] = useState(null);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
 
   // Delete identifier handler
@@ -503,10 +500,6 @@ const ConnectPage = () => {
               community={showJoinCommunityPanel}
               userProfile={userProfile}
               onClose={() => setShowJoinCommunityPanel(null)}
-              onJoinSuccess={() => {
-                setShowJoinCommunityPanel(null);
-                fetchCommunities();
-              }}
             />
           )}
         </div>

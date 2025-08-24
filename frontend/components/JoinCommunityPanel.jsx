@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { X, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { X, AlertCircle, Copy } from "lucide-react";
 import { toast } from "sonner";
-import ConfirmDialog from "@/components/ConfirmDialog";
 
 const JoinCommunityPanel = ({
   community,
   userProfile,
   onClose,
-  onJoinSuccess,
 }) => {
-  const [identifierType, setIdentifierType] = useState("existing");
-  const [customIdentifier, setCustomIdentifier] = useState("");
-  const [customName, setCustomName] = useState("");
-  const [loading, setLoading] = useState(false);
 
   // If userProfile is null, show a message instead of the join form
   if (!userProfile) {
@@ -63,71 +55,6 @@ const JoinCommunityPanel = ({
     );
   }
 
-  // Dialog state for join request
-  const [showDialog, setShowDialog] = useState(false);
-
-  const handleAddIdentifier = async () => {
-    if (identifierType === "custom" && (!customIdentifier || !customName)) {
-      toast.error("Please fill in all custom identifier fields");
-      return;
-    }
-    setShowDialog(true);
-  };
-
-  const confirmAddIdentifier = async () => {
-    setLoading(true);
-    try {
-      if (identifierType === "custom") {
-        const requestData = {
-          label: customName,
-          value: customIdentifier,
-        };
-
-        const response = await fetch("/api/connect/profile/identifiers", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(requestData),
-        });
-
-        if (response.ok) {
-          toast.success(
-            "Identifier added successfully! You can now join this community using this identifier."
-          );
-          setShowDialog(false);
-          onJoinSuccess();
-        } else {
-          const error = await response.json();
-          toast.error(`Error: ${error.detail || "Failed to add identifier"}`);
-        }
-      } else {
-        // For existing identifiers, just show success message
-        toast.success(
-          `Your request was successful. Please follow the invite link or instructions provided.`
-        );
-        setShowDialog(false);
-        onJoinSuccess();
-      }
-    } catch (error) {
-      console.error("Error adding identifier:", error);
-      toast.error("Failed to add identifier. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setIdentifierType("existing");
-    setCustomIdentifier("");
-    setCustomName("");
-  };
-
-  useEffect(() => {
-    if (!community) resetForm();
-  }, [community]);
-
   if (!community) return null;
 
   return (
@@ -154,136 +81,115 @@ const JoinCommunityPanel = ({
         </div>
         <div className="panel-content">
           <div className="form-section">
-            <h3 className="section-title">Instructions</h3>
+            <h3 className="section-title"> Join Instruction</h3>
             <p className="section-description">
               {community.identifier_format_instruction}
             </p>
 
             {community.invite_link && (
-              <div className="invite-link-section">
-                <h4 className="invite-link-label">Invite Link:</h4>
+              <div className="invite-link-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <h4 className="invite-link-label" style={{ marginBottom: 0 }}>Invite Link:</h4>
                 <a
                   href={community.invite_link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="invite-link"
+                  style={{ wordBreak: 'break-all' }}
                 >
                   {community.invite_link}
                 </a>
+                <Button
+                  type="button"
+                  aria-label="Copy invite link"
+                  className="copy-link-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText(community.invite_link);
+                    toast.success("Invite link copied to clipboard!");
+                  }}
+                >
+                  <Copy size={18} />
+                </Button>
               </div>
             )}
           </div>
 
-          <div className="form-section">
-            <h3 className="section-title">Choose Identifier</h3>
-            <div className="form-group">
-              <div className="radio-group">
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="identifierType"
-                    value="existing"
-                    checked={identifierType === "existing"}
-                    onChange={(e) => setIdentifierType(e.target.value)}
-                    className="radio-input"
-                  />
-                  <span className="radio-text">
-                    Use my existing identifiers (from profile setup)
-                  </span>
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="identifierType"
-                    value="custom"
-                    checked={identifierType === "custom"}
-                    onChange={(e) => setIdentifierType(e.target.value)}
-                    className="radio-input"
-                  />
-                  <span className="radio-text">
-                    Add a new custom identifier
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {identifierType === "custom" && (
-              <div className="form-section">
-                <h3 className="section-title">Custom Identifier Details</h3>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label className="form-label">Identifier Label</label>
-                    <Input
-                      placeholder="e.g., 'discord_username', 'work_email'"
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value)}
-                      required
-                      className="form-input"
-                    />
-                    <p className="input-hint">
-                      A name to identify this type of contact information
+          <div className="form-section join-process-section">
+            <h3 className="section-title process-title">How to Join This Community</h3>
+            <div className="process-container">
+              <div className="process-timeline">
+                <div className="timeline-step">
+                  <div className="step-indicator">
+                    <div className="step-number">1</div>
+                    <div className="step-connector"></div>
+                  </div>
+                  <div className="step-content">
+                    <h4 className="step-title">Use the Invite Link</h4>
+                    <p className="step-description">
+                      Click on the invite link provided above to request joining the community on their platform (e.g., WhatsApp, Discord, Telegram, etc.).
                     </p>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Identifier Value</label>
-                    <Input
-                      placeholder="Enter the identifier value"
-                      value={customIdentifier}
-                      onChange={(e) => setCustomIdentifier(e.target.value)}
-                      required
-                      className="form-input"
-                    />
-                    <p className="input-hint">
-                      The actual value of this identifier
+                </div>
+
+                <div className="timeline-step">
+                  <div className="step-indicator">
+                    <div className="step-number">2</div>
+                    <div className="step-connector"></div>
+                  </div>
+                  <div className="step-content">
+                    <h4 className="step-title">Admin Verification</h4>
+                    <p className="step-description">
+                      The community admin will use this alumni portal to verify your details. They will cross-reference your information with our alumni database.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="timeline-step">
+                  <div className="step-indicator">
+                    <div className="step-number">3</div>
+                    <div className="step-connector"></div>
+                  </div>
+                  <div className="step-content">
+                    <h4 className="step-title">Secure Identity Matching</h4>
+                    <p className="step-description">
+                      Our system will securely compare the hash of your contact details with the identifiers in your profile to confirm your alumni status while protecting your privacy.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="timeline-step final-step">
+                  <div className="step-indicator">
+                    <div className="step-number">4</div>
+                  </div>
+                  <div className="step-content">
+                    <h4 className="step-title">Access Granted</h4>
+                    <p className="step-description">
+                      Once verification is complete, the admin will approve your request and you'll be welcomed into the community!
                     </p>
                   </div>
                 </div>
               </div>
-            )}
+
+              <div className="verification-notice">
+                <div className="notice-header">
+                  <AlertCircle className="notice-icon" size={24} />
+                  <h4 className="notice-title">Important Verification Requirements</h4>
+                </div>
+                <div className="notice-body">
+                  <p className="notice-description">
+                    <strong>Ensure your profile is complete:</strong> Make sure your profile identifiers are accurate and up-to-date. Only exact-match information will be considered for verification.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="form-actions">
-              <Button
-                onClick={handleAddIdentifier}
-                className="action-button primary"
-                disabled={
-                  identifierType === "custom" &&
-                  (!customIdentifier || !customName)
-                }
-              >
-                {identifierType === "custom"
-                  ? "Add Identifier & Join"
-                  : "Continue to Join"}
-              </Button>
-              <Button onClick={onClose} className="action-button">
-                Cancel
+              <Button onClick={onClose} className="action-button primary">
+                Got It
               </Button>
             </div>
           </div>
         </div>
       </div>
-      {/* ConfirmDialog for join request */}
-      <ConfirmDialog
-        open={showDialog}
-        title={
-          identifierType === "custom" ? "Add New Identifier" : "Join Community"
-        }
-        description={
-          identifierType === "custom"
-            ? "This will add a new identifier to your profile that you can use for this and other communities."
-            : "You can join this community using your existing identifiers. Follow any invite links or instructions provided by the community."
-        }
-        onCancel={() => {
-          setShowDialog(false);
-          setLoading(false);
-        }}
-        onConfirm={confirmAddIdentifier}
-        confirmText={
-          identifierType === "custom" ? "Add Identifier" : "Understood"
-        }
-        cancelText="Cancel"
-        loading={loading}
-        style={{ zIndex: 1300 }} // Ensure ConfirmDialog is above everything
-      />
     </div>
   );
 };
