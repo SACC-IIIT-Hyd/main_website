@@ -154,52 +154,28 @@
       min-height: 48px;
 
       &.create-community-btn {
-        background: linear-gradient(
-          135deg,
-          var(--super-admin-primary) 0%,
-          #a86830 100%
-        );
+        background: #563d6f;
         border-color: var(--super-admin-primary);
         color: var(--text-light);
         box-shadow: 0 4px 15px rgba(200, 125, 72, 0.2);
 
         &:hover {
-          background: linear-gradient(
-            135deg,
-            #a86830 0%,
-            var(--super-admin-primary) 100%
-          );
+          background: #654383;
           transform: translateY(-3px);
-          box-shadow: 0 8px 25px rgba(200, 125, 72, 0.4);
-        }
-
-        &.submit-button {
-          margin-left: auto;
+          box-shadow: 0 8px 25px #563d6f;
         }
       }
 
       &.create-admin-btn {
-        background: linear-gradient(
-          135deg,
-          rgba(34, 197, 94, 0.9) 0%,
-          rgba(34, 197, 94, 0.8) 100%
-        );
-        border-color: var(--success-color);
+        background: rgba(34, 197, 94, 0.8);
         color: var(--text-light);
         box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+        border-color: rgba(34, 197, 94);
 
         &:hover {
-          background: linear-gradient(
-            135deg,
-            var(--success-color) 0%,
-            rgba(34, 197, 94, 0.9) 100%
-          );
+          background: rgba(34, 197, 94);
           transform: translateY(-3px);
           box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
-        }
-
-        &.submit-button {
-          margin-left: auto;
         }
       }
     }
@@ -215,7 +191,7 @@
       color: var(--text-light);
 
       &:hover {
-        background: var(--super-admin-hover);
+        background: var(--super-admin-hover); 
         transform: translateY(-2px);
       }
     }

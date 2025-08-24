@@ -248,7 +248,7 @@ const SuperAdminPanel = ({ onClose }) => {
                     </div>
                     <h3 className="empty-title">No Communities Found</h3>
                     <p className="empty-subtitle">
-                      Create your first community to get started with alumni
+                      Create the first community to get started with alumni
                       engagement.
                     </p>
                     <Button

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,12 +10,10 @@ import {
   XCircle,
   Edit,
   Save,
-  Upload,
   Globe,
 } from "lucide-react";
 import "@/styles/CommunityAdminPanel.scss";
 import { Toaster, toast } from "sonner";
-import ConfirmDialog from "./ConfirmDialog";
 
 const CommunityAdminPanel = ({ onClose }) => {
   const [adminCommunities, setAdminCommunities] = useState([]);
@@ -303,6 +300,11 @@ const CommunityManagement = ({ community }) => {
               onChange={(e) => setIdentifierValue(e.target.value)}
               placeholder="Enter identifier to verify (email, phone, etc.)"
               className="verification-input"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleVerifyIdentifier();
+                }
+              }}
             />
             <Button
               onClick={handleVerifyIdentifier}
@@ -467,7 +469,7 @@ const CommunityManagement = ({ community }) => {
               <div className="card-header">
                 <div className="community-info">
                   <span className="community-icon">
-                    🌐
+                    <Globe className="icon" />
                   </span>
                   <h3 className="community-name">{community.name}</h3>
                 </div>

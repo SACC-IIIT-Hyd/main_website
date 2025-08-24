@@ -4,6 +4,6 @@ cd frontend
 npm install
 cd ..
 
-docker-compose up --build
+sudo docker-compose up --build
 
-docker-compose down
+sudo docker-compose down
