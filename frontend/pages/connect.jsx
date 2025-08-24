@@ -75,6 +75,33 @@ const ConnectPage = () => {
     }
   };
 
+  // Add identifier handler
+  const handleAddIdentifier = async (identifierData) => {
+    try {
+      const response = await fetch("/api/connect/profile/identifiers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(identifierData),
+      });
+
+      if (response.ok) {
+        toast.success("Identifier added successfully");
+        fetchUserProfile();
+      } else {
+        const error = await response.json();
+        toast.error(
+          `Failed to add identifier: ${error.detail || "Unknown error"}`
+        );
+      }
+    } catch (e) {
+      console.error("Error adding identifier:", e);
+      toast.error("Error adding identifier");
+    }
+  };
+
   useEffect(() => {
     fetchUserProfile();
     fetchUserRoles();
@@ -350,6 +377,7 @@ const ConnectPage = () => {
             <ProfilePanel
               userProfile={userProfile}
               onDeleteIdentifier={handleDeleteIdentifier}
+              onAddIdentifier={handleAddIdentifier}
               onClose={() => setShowProfilePanel(false)}
             />
           )}
