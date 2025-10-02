@@ -47,6 +47,7 @@ const ConnectPage = () => {
   const [showCommunityAdminPanel, setShowCommunityAdminPanel] = useState(false);
   const [showJoinCommunityPanel, setShowJoinCommunityPanel] = useState(null);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
+  const [setupPhoneDigits, setSetupPhoneDigits] = useState(new Array(12).fill(""));
 
   // Delete identifier handler
   const handleDeleteIdentifier = async (identifierId) => {
@@ -176,8 +177,47 @@ const ConnectPage = () => {
     }
   };
 
+  // Handle phone digit input for setup
+  const handleSetupPhoneDigitChange = (index, value) => {
+    if (value.length <= 1 && /^[0-9]*$/.test(value)) {
+      const newPhoneDigits = [...setupPhoneDigits];
+      newPhoneDigits[index] = value;
+      setSetupPhoneDigits(newPhoneDigits);
+
+      // Auto-focus to next input if digit entered
+      if (value && index < 11) {
+        const nextInput = document.querySelector(`[data-setup-phone-index="${index + 1}"]`);
+        if (nextInput) nextInput.focus();
+      }
+    }
+  };
+
+  // Handle backspace in setup phone inputs
+  const handleSetupPhoneKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !setupPhoneDigits[index] && index > 0) {
+      const prevInput = document.querySelector(`[data-setup-phone-index="${index - 1}"]`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
   const handleProfileSetup = async (e) => {
     e.preventDefault();
+
+    // Build phone number from digits
+    const phoneNumber = setupPhoneDigits.join("");
+    if (setupPhoneDigits.some(digit => digit === "")) {
+      toast.error("Please enter all 12 phone number digits");
+      return;
+    }
+
+    // Update profileData with phone number
+    const updatedProfileData = {
+      ...profileData,
+      identifiers: profileData.identifiers.map((id, index) =>
+        index === 1 ? { ...id, value: phoneNumber } : id
+      ),
+    };
+
     try {
       const response = await fetch("/api/connect/profile", {
         method: "POST",
@@ -185,7 +225,7 @@ const ConnectPage = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(profileData),
+        body: JSON.stringify(updatedProfileData),
       });
 
       if (response.ok) {
@@ -283,25 +323,24 @@ const ConnectPage = () => {
 
                     <div className="form-group mb-6">
                       <label className="form-label block mb-1 font-medium">
-                        Phone Number
+                        Phone Number (with country code)
                       </label>
-                      <Input
-                        type="tel"
-                        value={profileData.identifiers[1]?.value || ""}
-                        onChange={(e) =>
-                          setProfileData((prev) => ({
-                            ...prev,
-                            identifiers: prev.identifiers.map((id, index) =>
-                              index === 1
-                                ? { ...id, value: e.target.value }
-                                : id
-                            ),
-                          }))
-                        }
-                        placeholder="+91 98765 43210"
-                        required
-                        className="form-input w-full"
-                      />
+                      <div className="phone-input-container">
+                        {setupPhoneDigits.map((digit, index) => (
+                          <input
+                            key={index}
+                            type="text"
+                            maxLength={1}
+                            value={digit}
+                            onChange={(e) => handleSetupPhoneDigitChange(index, e.target.value)}
+                            onKeyDown={(e) => handleSetupPhoneKeyDown(index, e)}
+                            data-setup-phone-index={index}
+                            className="phone-digit-input"
+                            placeholder="0"
+                          />
+                        ))}
+                      </div>
+                      <p className="phone-help-text">Enter 12 digits including country code (e.g., +91 9876543210)</p>
                     </div>
 
                     <Button type="submit" className="setup-button w-full">

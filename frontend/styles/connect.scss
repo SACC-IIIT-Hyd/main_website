@@ -238,11 +238,108 @@
     outline: none;
     border-color: #6c5b7b;
     background: rgba(31, 18, 26, 0.9);
-    box-shadow: 0 0 20px rgba(108, 91, 123, 0.2);
   }
+}
 
+/* Phone number input styles for connect page */
+.phone-input-container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(108, 91, 123, 0.08) 0%, rgba(31, 18, 26, 0.6) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(108, 91, 123, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.phone-digit-input {
+  width: 100%;
+  height: 3rem;
+  text-align: center;
+  border: 2px solid rgba(108, 91, 123, 0.4);
+  border-radius: 12px;
+  background: rgba(31, 18, 26, 0.8);
+  color: #efdfc2;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(15px);
+  position: relative;
+  
+  &:hover {
+    border-color: rgba(108, 91, 123, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 91, 123, 0.2);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #6c5b7b;
+    background: rgba(31, 18, 26, 0.9);
+    box-shadow: 0 0 0 3px rgba(108, 91, 123, 0.2), 0 4px 20px rgba(108, 91, 123, 0.25);
+    transform: translateY(-2px) scale(1.05);
+    z-index: 10;
+  }
+  
   &::placeholder {
     color: rgba(239, 223, 194, 0.5);
+    font-weight: 400;
+  }
+  
+  /* Add visual separators for better UX */
+  &:nth-child(3)::after,
+  &:nth-child(6)::after {
+    content: '-';
+    position: absolute;
+    right: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(239, 223, 194, 0.6);
+    font-weight: 600;
+    font-size: 1.2rem;
+    pointer-events: none;
+  }
+}
+
+.phone-help-text {
+  font-size: 0.85rem;
+  color: rgba(239, 223, 194, 0.8);
+  margin-top: 0.5rem;
+  font-style: italic;
+  text-align: center;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Responsive design for phone inputs */
+@media (max-width: 768px) {
+  .phone-input-container {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.4rem;
+    padding: 0.75rem;
+  }
+  
+  .phone-digit-input {
+    height: 2.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .phone-input-container {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3rem;
+    padding: 0.5rem;
+  }
+  
+  .phone-digit-input {
+    height: 2.25rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
   }
 }
 
