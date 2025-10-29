@@ -75,14 +75,8 @@ status: ## Show container status
 
 clean: ## Remove stopped containers, unused networks, images, and volumes
 	@echo "$(YELLOW)Warning: This will remove unused Docker resources$(NC)"
-	@read -p "Are you sure? [y/N] " -n 1 -r; \
-	echo; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		docker system prune -af --volumes; \
-		echo "$(GREEN)Cleanup completed!$(NC)"; \
-	else \
-		echo "$(YELLOW)Cleanup cancelled$(NC)"; \
-	fi
+	docker system prune -af --volumes
+	@echo "$(GREEN)Cleanup completed!$(NC)"
 
 # Database Management
 db-backup: ## Create a database backup
@@ -111,18 +105,12 @@ endif
 		exit 1; \
 	fi
 	@echo "$(YELLOW)Warning: This will replace all existing data$(NC)"
-	@read -p "Are you sure? [y/N] " -n 1 -r; \
-	echo; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		if [[ "$(BACKUP_FILE)" == *.gz ]]; then \
-			gunzip -c $(BACKUP_FILE) | docker exec -i $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB); \
-		else \
-			docker exec -i $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < $(BACKUP_FILE); \
-		fi; \
-		echo "$(GREEN)Database restored successfully!$(NC)"; \
+	if [[ "$(BACKUP_FILE)" == *.gz ]]; then \
+		gunzip -c $(BACKUP_FILE) | docker exec -i $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB); \
 	else \
-		echo "$(YELLOW)Restore cancelled$(NC)"; \
-	fi
+		docker exec -i $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < $(BACKUP_FILE); \
+	fi; \
+	echo "$(GREEN)Database restored successfully!$(NC)"
 
 db-list-backups: ## List all available backups
 	@echo "$(BLUE)Available backups:$(NC)"

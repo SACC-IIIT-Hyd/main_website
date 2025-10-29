@@ -18,6 +18,8 @@ const getPageTitle = (path) => {
       return 'Yearbooks | SACC';
     case '/alumni':
       return 'Alumni | SACC';
+    case '/connect':
+      return 'Connect | SACC';
     default:
       return 'SACC';
   }

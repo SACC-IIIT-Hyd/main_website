@@ -1,0 +1,1086 @@
+/* Enhanced Styles for Admin Panel Buttons and Modals - Solid Backgrounds */
+
+/* Define custom properties with purple color scheme */
+:root {
+  --super-admin-primary: #6c5b7b;
+  --super-admin-bg: rgba(20, 14, 23, 0.8);
+  --super-admin-border: #6c5b7b;
+  --super-admin-card: rgba(108, 91, 123, 0.1);
+  --danger-color: #9c27b0;
+  --text-light: #efdfc2;
+}
+
+/* ========================================
+   MAIN PANEL STYLES
+======================================== */
+
+.super-admin-panel {
+  .panel-container {
+    background: var(--super-admin-bg);
+    border: 2px solid var(--super-admin-border);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+
+    &.create-community-container,
+    &.create-admin-container {
+      max-width: 800px;
+    }
+  }
+
+  .panel-header {
+    padding: 2rem 2.5rem 1.5rem 2.5rem;
+    border-bottom: 2px solid var(--super-admin-border);
+    background: var(--super-admin-card);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .panel-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--super-admin-primary);
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .panel-subtitle {
+      color: rgba(239, 223, 194, 0.8);
+      font-size: 1rem;
+      margin: 0.5rem 0 0 0;
+      font-weight: 500;
+    }
+
+    .close-button {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      background: var(--super-admin-card);
+      border: 2px solid var(--super-admin-border);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: var(--danger-color);
+        border-color: var(--danger-color);
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+      }
+    }
+  }
+
+  .panel-content {
+    padding: 2rem 2.5rem;
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+    background: var(--super-admin-bg);
+    scrollbar-width: thin;
+    scrollbar-color: var(--super-admin-border) transparent;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--super-admin-card);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--super-admin-border);
+      border-radius: 4px;
+
+      &:hover {
+        background: var(--super-admin-primary);
+      }
+    }
+
+    .create-community-form {
+      .form-section {
+        background: var(--super-admin-card);
+        border: 2px solid var(--super-admin-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 1.2rem;
+          font-weight: 700;
+          color: var(--super-admin-primary);
+          margin-bottom: 1.25rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid var(--super-admin-border);
+
+          .icon {
+            width: 22px;
+            height: 22px;
+          }
+        }
+      }
+    }
+  }
+
+  /* Action Buttons at Top */
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    .action-btn {
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid;
+      font-family: "Montserrat", sans-serif;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-height: 48px;
+
+      &.create-community-btn {
+        background: #563d6f;
+        border-color: var(--super-admin-primary);
+        color: var(--text-light);
+        box-shadow: 0 4px 15px rgba(200, 125, 72, 0.2);
+
+        &:hover {
+          background: #654383;
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px #563d6f;
+        }
+      }
+
+      &.create-admin-btn {
+        background: rgba(34, 197, 94, 0.8);
+        color: var(--text-light);
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+        border-color: rgba(34, 197, 94);
+
+        &:hover {
+          background: rgba(34, 197, 94);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+        }
+      }
+    }
+
+    .btn-cancel {
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid var(--super-admin-border);
+      background: var(--super-admin-card);
+      color: var(--text-light);
+
+      &:hover {
+        background: var(--super-admin-hover); 
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  /* Communities Grid */
+  .communities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .community-card {
+    background: var(--super-admin-card);
+    border: 2px solid var(--super-admin-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      border-color: var(--super-admin-primary);
+      background: var(--super-admin-hover);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+
+      .community-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+
+        .community-icon {
+          font-size: 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          background: var(--super-admin-hover);
+          border-radius: 12px;
+          border: 2px solid var(--super-admin-border);
+        }
+
+        .community-name {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--text-light);
+          margin: 0;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+
+    .card-content {
+      .community-description {
+        color: rgba(239, 223, 194, 0.9);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+      }
+
+      .community-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+
+        .platform-badge {
+          background: var(--super-admin-primary);
+          color: var(--text-light);
+          padding: 0.25rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+
+        .member-count {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: rgba(239, 223, 194, 0.7);
+          font-size: 0.9rem;
+
+          .icon {
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .tag {
+          background: var(--super-admin-hover);
+          color: var(--text-light);
+          border: 1px solid var(--super-admin-border);
+          padding: 0.25rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 500;
+
+          &.more-tags {
+            background: var(--super-admin-border);
+            color: rgba(239, 223, 194, 0.8);
+          }
+        }
+      }
+    }
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--super-admin-card);
+    border: 2px dashed var(--super-admin-border);
+    border-radius: 16px;
+
+    .empty-icon {
+      color: var(--super-admin-primary);
+      opacity: 0.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 0.75rem;
+    }
+
+    .empty-subtitle {
+      color: rgba(239, 223, 194, 0.7);
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
+
+    .empty-action-btn {
+      background: linear-gradient(
+        135deg,
+        var(--super-admin-primary) 0%,
+        #a86830 100%
+      );
+      border: 2px solid var(--super-admin-primary);
+      color: var(--text-light);
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+
+      &:hover {
+        background: linear-gradient(
+          135deg,
+          #a86830 0%,
+          var(--super-admin-primary) 100%
+        );
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(200, 125, 72, 0.4);
+      }
+    }
+  }
+
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1.5rem;
+
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--super-admin-card);
+      border-radius: 50%;
+      border-top-color: var(--super-admin-primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    .loading-text {
+      color: var(--text-light);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+  }
+}
+
+/* ========================================
+   ACTION BUTTONS IN COMMUNITY CARDS
+======================================== */
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  align-items: center;
+
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    color: white;
+    padding: 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid;
+    cursor: pointer;
+    position: relative;
+    background: var(--super-admin-card);
+
+    &:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    // Manage Admins Button
+    &[title*="Manage"] {
+      background: var(--super-admin-card);
+      color: var(--success-color);
+      border-color: rgba(34, 197, 94, 0.4);
+
+      &:hover {
+        color: rgba(34, 197, 94, 0.6);
+        box-shadow: 0 6px 10px rgba(34, 197, 94, 0.15);
+      }
+    }
+
+    // Edit Button
+    &[title*="Edit"] {
+      border-color: rgba(251, 191, 36, 0.4);
+
+      &:hover {
+        color: rgba(251, 191, 36, 0.6);
+        box-shadow: 0 6px 10px rgba(251, 191, 36, 0.15);
+      }
+    }
+
+    // Delete Button
+    &[title*="Delete"] {
+      background: var(--super-admin-card);
+      border-color: rgba(220, 38, 38, 0.4);
+
+      &:hover {
+        color: red;
+        border-color: red;
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+        animation: shake 0.3s ease-in-out;
+      }
+    }
+  }
+}
+
+/* ========================================
+   FORM STYLES FOR CREATE PANELS
+======================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  .form-group {
+    position: relative;
+
+    &.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      display: block;
+      color: var(--text-light);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input,
+    textarea,
+    .platform-select,
+    .community-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--super-admin-border);
+      border-radius: 10px;
+      background: var(--super-admin-bg);
+      color: var(--text-light);
+      font-family: "Montserrat", sans-serif;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+
+      &:focus {
+        outline: none;
+        border-color: var(--super-admin-primary);
+        background: var(--super-admin-hover);
+        box-shadow: 0 0 20px rgba(200, 125, 72, 0.2);
+      }
+
+      &::placeholder {
+        color: rgba(239, 223, 194, 0.5);
+      }
+    }
+
+    .tags-input-container {
+      .tags-input-wrapper {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+
+        input {
+          flex: 1;
+        }
+
+        button {
+          padding: 0.75rem 1rem;
+          background: var(--super-admin-hover);
+          border: 2px solid var(--super-admin-primary);
+          border-radius: 8px;
+          color: var(--text-light);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:hover:not(:disabled) {
+            background: var(--super-admin-primary);
+            color: var(--text-light);
+            transform: scale(1.05);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .tag {
+          background: var(--super-admin-card);
+          color: var(--text-light);
+          border: 1px solid var(--super-admin-border);
+          padding: 0.25rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          .tag-remove {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(220, 38, 38, 0.2);
+              transform: scale(1.1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ========================================
+   ADMIN PANEL OVERLAY
+======================================== */
+
+.admin-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(15px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ========================================
+   ADMIN MANAGEMENT STYLES
+======================================== */
+
+.admins-list {
+  .admin-item {
+    background: var(--super-admin-card);
+    border: 2px solid var(--super-admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--super-admin-primary);
+      background: var(--super-admin-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .admin-info {
+      flex: 1;
+
+      .admin-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin: 0 0 0.5rem 0;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .admin-email {
+        color: var(--super-admin-primary);
+        font-weight: 500;
+        margin: 0 0 0.5rem 0;
+        font-size: 0.95rem;
+      }
+
+      .assigned-by {
+        color: rgba(239, 223, 194, 0.7);
+        font-size: 0.85rem;
+        margin: 0;
+        font-style: italic;
+      }
+    }
+
+    .remove-admin-btn {
+      padding: 0.5rem 1rem;
+      background: var(--super-admin-card);
+      border: 2px solid rgba(220, 38, 38, 0.4);
+      border-radius: 8px;
+      color: var(--danger-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+
+      &:hover {
+        background: var(--danger-color);
+        color: var(--text-light);
+        border-color: var(--danger-color);
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        animation: shake 0.3s ease-in-out;
+      }
+    }
+  }
+}
+
+/* ========================================
+   DELETE COMMUNITY STYLES
+======================================== */
+
+.delete-community-container {
+  max-width: 600px;
+
+  .danger-section {
+    border-color: rgba(220, 38, 38, 0.4);
+    background: rgba(220, 38, 38, 0.05);
+
+    .warning-section {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: var(--super-admin-card);
+      border: 2px solid rgba(220, 38, 38, 0.3);
+      border-radius: 12px;
+
+      .warning-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+      }
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--danger-color);
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: rgba(239, 223, 194, 0.9);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+      }
+    }
+  }
+
+  .action-btn.delete-btn {
+    background: linear-gradient(135deg, var(--danger-color) 0%, #b91c1c 100%);
+    border-color: var(--danger-color);
+    color: var(--text-light);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #b91c1c 0%, var(--danger-color) 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+      animation: shake 0.3s ease-in-out;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      animation: none;
+    }
+  }
+}
+
+/* ========================================
+   ANIMATIONS
+======================================== */
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 768px) {
+  .super-admin-panel {
+    .panel-header {
+      padding: 1.5rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .panel-title {
+        font-size: 1.5rem;
+      }
+
+      .close-button {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 36px;
+        height: 36px;
+      }
+    }
+
+    .panel-content {
+      padding: 1.5rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 0.75rem;
+      justify-content: center;
+
+      .action-btn {
+        width: auto;
+        justify-content: center;
+      }
+    }
+
+    .communities-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .admins-list .admin-item {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+
+    .admin-info {
+      .admin-name {
+        font-size: 1rem;
+      }
+
+      .admin-email {
+        font-size: 0.9rem;
+      }
+
+      .assigned-by {
+        font-size: 0.8rem;
+      }
+    }
+
+    .remove-admin-btn {
+      align-self: flex-end;
+      width: auto;
+      padding: 0.5rem 1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .community-card {
+    .card-header {
+      .community-info {
+        gap: 0.5rem;
+
+        .community-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1.5rem;
+        }
+
+        .community-name {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  .form-group {
+    .form-label {
+      font-size: 0.8rem;
+    }
+
+    input,
+    textarea,
+    .platform-select,
+    .community-select {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.85rem;
+    }
+  }
+
+  .tags-input-container {
+    .tags-input-wrapper {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      button {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    .tags-list {
+      .tag {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+      }
+    }
+  }
+}
+
+/* ========================================
+   CONFIRM DIALOG STYLES
+======================================== */
+
+.confirm-dialog-container {
+  max-width: 500px;
+
+  .confirm-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+
+    .submit-button {
+      background: linear-gradient(
+        135deg,
+        var(--super-admin-primary) 0%,
+        var(--super-admin-primary) 100%
+      );
+      border-color: var(--super-admin-primary);
+    }
+  }
+}
+
+/* ========================================
+   ADDITIONAL ENHANCEMENTS
+======================================== */
+
+// Enhanced focus states for accessibility
+.action-btn:focus-visible,
+.confirm-dialog-button:focus-visible,
+.close-button:focus-visible {
+  outline: 3px solid var(--super-admin-primary);
+  outline-offset: 2px;
+}
+
+// Improved loading states
+.loading-container {
+  .loading-spinner {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid transparent;
+      border-top-color: var(--super-admin-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+}
+
+// Enhanced hover effects for better UX
+.community-card {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(200, 125, 72, 0.1),
+      transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+
+  .card-header,
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+// Improved form validation styles
+.form-group {
+  &.error {
+    input,
+    textarea,
+    select {
+      border-color: var(--danger-color);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+  }
+
+  &.success {
+    input,
+    textarea,
+    select {
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+  }
+
+  .error-message {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+
+  .success-message {
+    color: var(--success-color);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+}

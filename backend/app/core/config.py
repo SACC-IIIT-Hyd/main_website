@@ -20,7 +20,7 @@ Example:
 
 from functools import lru_cache
 from typing import Optional
-from pydantic import Field
+from pydantic import Field, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -97,6 +97,32 @@ class Settings(BaseSettings):
         default=None,
         description="Database connection URL (PostgreSQL format)"
     )
+    
+    # Individual database components (fallback if DATABASE_URL not set)
+    postgres_host: str = Field(
+        default="postgres",
+        description="PostgreSQL host"
+    )
+    
+    postgres_port: str = Field(
+        default="5432",
+        description="PostgreSQL port"
+    )
+    
+    postgres_db: str = Field(
+        default="sacc_db",
+        description="PostgreSQL database name"
+    )
+    
+    postgres_user: str = Field(
+        default="sacc_user",
+        description="PostgreSQL username"
+    )
+    
+    postgres_password: str = Field(
+        default="sacc_password",
+        description="PostgreSQL password"
+    )
 
     # CORS settings
     cors_origins: list[str] = Field(
@@ -143,6 +169,23 @@ class Settings(BaseSettings):
         default=80,
         description="Port number to bind the server"
     )
+
+    # Connect page configuration
+    super_admin_emails: str = Field(
+        default="",
+        description="Comma-separated list of super admin email addresses"
+    )
+
+    hash_key: str = Field(
+        default="default-hash-key-change-in-production",
+        description="Secret key for hashing identifiers"
+    )
+
+    def get_super_admin_emails_list(self) -> list[str]:
+        """Get super admin emails as a list."""
+        if self.super_admin_emails:
+            return [email.strip() for email in self.super_admin_emails.split(',') if email.strip()]
+        return []
 
 
 @lru_cache()

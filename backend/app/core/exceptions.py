@@ -278,3 +278,37 @@ class ConfigurationError(SACCBackendException):
             details (Optional[Dict[str, Any]]): Additional error context
         """
         super().__init__(message, "CONFIGURATION_ERROR", details)
+
+
+class NotFoundError(SACCBackendException):
+    """
+    Exception raised when a requested resource is not found.
+
+    This exception is raised when trying to access resources that
+    don't exist in the database or filesystem.
+
+    Example:
+        ```python
+        from app.core.exceptions import NotFoundError
+
+        if not user:
+            raise NotFoundError(
+                "User not found",
+                details={"user_id": user_id}
+            )
+        ```
+    """
+
+    def __init__(
+        self,
+        message: str = "Resource not found",
+        details: Optional[Dict[str, Any]] = None
+    ):
+        """
+        Initialize not found error.
+
+        Args:
+            message (str): Not found error message
+            details (Optional[Dict[str, Any]]): Additional error context
+        """
+        super().__init__(message, "NOT_FOUND_ERROR", details)

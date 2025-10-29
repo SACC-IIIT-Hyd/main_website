@@ -31,11 +31,18 @@ const NavbarComponent = ({ isSticky = false }) => {
     { href: '/about', label: 'About' },
     { href: '/event', label: 'Events' },
     { href: '/team', label: 'Team' },
-    {
-      href: authenticated ? '/yearbooks' : '/api/login',
-      label: 'Yearbooks'
-    },
+    { href: '/yearbooks', label: 'Yearbooks' },
+    { href: '/alumni', label: 'Alumni' },
+    { href: '/connect', label: 'Connect' }
   ];
+
+  const protectedPages = ['/yearbooks', '/alumni', '/connect'];
+  const handleNavClick = (e, href) => {
+    if (protectedPages.includes(href) && !authenticated) {
+      e.preventDefault();
+      window.location.href = '/api/login';
+    }
+  };
 
   return (
     <nav className={`header-nav ${isSticky ? "sticky" : ""}`}>
@@ -64,36 +71,11 @@ const NavbarComponent = ({ isSticky = false }) => {
                 className="nav-link"
                 target={item.label === 'Alumni' ? '_blank' : undefined}
                 rel={item.label === 'Alumni' ? 'noopener noreferrer' : undefined}
+                onClick={e => handleNavClick(e, item.href)}
               >
                 {item.label}
               </a>
             ))}
-            {authenticated && (
-              <a
-                href="/alumni"
-                className="nav-link"
-                style={{ order: 4 }}
-              >
-                Alumni
-              </a>
-            )}
-            {authenticated && (
-              <button
-                onClick={handleLogout}
-                className="logout-btn mobile-logout"
-                style={{ order: 5 }}
-              >
-                Logout
-              </button>
-            )}
-            {!authenticated && (
-              <a
-                href="/api/login"
-                className="login-link mobile-login"
-              >
-                Login
-              </a>
-            )}
           </div>
         </div>
 
@@ -101,14 +83,14 @@ const NavbarComponent = ({ isSticky = false }) => {
           {authenticated ? (
             <button
               onClick={handleLogout}
-              className="logout-btn desktop-logout"
+              className="logout-btn"
             >
               Logout
             </button>
           ) : (
             <a
               href="/api/login"
-              className="login-link desktop-login"
+              className="login-link"
             >
               Login
             </a>

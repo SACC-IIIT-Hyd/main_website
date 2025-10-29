@@ -3,6 +3,7 @@ Authentication service for the SACC Website Backend.
 
 This module provides authentication-related business logic including
 CAS integration, JWT token management, and user session handling.
+It integrates with the Connect service to manage user profiles.
 
 @module: app.services.auth_service
 @author: unignoramus11
@@ -32,6 +33,7 @@ from app.core.exceptions import (
 from app.core.security import create_access_token, verify_token
 from app.core.logging import get_logger, log_with_context
 from app.models.auth import UserResponse, LoginResponse
+from app.services.connect_service import ConnectService
 
 
 class AuthService:
@@ -65,12 +67,14 @@ class AuthService:
         Initialize the authentication service.
 
         Sets up the CAS client configuration and validates required settings.
+        Initializes the ConnectService for user profile management.
 
         Raises:
             ConfigurationError: If required CAS settings are missing
         """
         self.settings = get_settings()
         self.logger = get_logger(__name__)
+        self.connect_service = ConnectService()
 
         # Validate required CAS configuration
         if not self.settings.cas_server_url:
@@ -85,17 +89,24 @@ class AuthService:
                 details={"missing_setting": "SERVICE_URL"}
             )
 
-        # Initialize CAS client
-        service_url = (
-            f"{self.settings.service_url}?next="
-            f"{quote_plus(self.settings.redirect_url)}"
-        )
+        # Initialize CAS client if the library is available
+        if CASClient:
+            service_url = (
+                f"{self.settings.service_url}?next="
+                f"{quote_plus(self.settings.redirect_url)}"
+            )
 
-        self.cas_client = CASClient(
-            version=3,
-            service_url=service_url,
-            server_url=self.settings.cas_server_url,
-        )
+            self.cas_client = CASClient(
+                version=3,
+                service_url=service_url,
+                server_url=self.settings.cas_server_url,
+            )
+        else:
+            self.cas_client = None
+            self.logger.warning(
+                "CAS client could not be initialized - library not available",
+                extra={"component": "auth_service"}
+            )
 
         # Use the log_with_context function for structured logging
         log_with_context(
@@ -125,6 +136,12 @@ class AuthService:
             ```
         """
         try:
+            if not self.cas_client:
+                raise CASError(
+                    "CAS client not properly initialized",
+                    details={"error": "CAS library not available"}
+                )
+
             login_url = self.cas_client.get_login_url()
 
             log_with_context(
@@ -186,7 +203,17 @@ class AuthService:
                 component="auth_service"
             )
 
+            if not self.cas_client:
+                raise CASError(
+                    "CAS client not properly initialized",
+                    details={"error": "CAS library not available"}
+                )
+
             user, attributes, _ = self.cas_client.verify_ticket(ticket)
+
+            # If attributes is None, create an empty dict to avoid errors
+            if attributes is None:
+                attributes = {}
 
             if not user:
                 log_with_context(
@@ -203,12 +230,12 @@ class AuthService:
 
             # Extract user information
             user_data = {
-                "uid": attributes.get("uid"),
+                "uid": attributes.get("uid", ""),
                 "email": user,
-                "name": attributes.get("Name"),
-                "roll_no": attributes.get("RollNo"),
-                "first_name": attributes.get("FirstName"),
-                "last_name": attributes.get("LastName"),
+                "name": attributes.get("Name", ""),
+                "roll_no": attributes.get("RollNo", ""),
+                "first_name": attributes.get("FirstName", ""),
+                "last_name": attributes.get("LastName", ""),
             }
 
             log_with_context(
@@ -216,7 +243,7 @@ class AuthService:
                 "info",
                 "CAS ticket verified successfully",
                 user_email=user,
-                user_uid=attributes.get("uid"),
+                user_uid=attributes.get("uid", ""),
                 component="auth_service"
             )
 
@@ -238,12 +265,13 @@ class AuthService:
                 details={"error": str(e), "ticket": ticket}
             ) from e
 
-    def create_user_session(self, user_data: Dict[str, Any]) -> LoginResponse:
+    async def create_user_session(self, user_data: Dict[str, Any]) -> LoginResponse:
         """
         Create a user session with JWT token.
 
         This method creates a JWT token for the authenticated user and
-        returns a complete login response.
+        returns a complete login response. It also ensures the user
+        profile is created or updated in the database via ConnectService.
 
         Args:
             user_data (Dict[str, Any]): User information from CAS
@@ -262,12 +290,57 @@ class AuthService:
             ```
         """
         try:
+            # Get or create user profile in the database
+            cas_uid = user_data.get("uid", "")
+            email = user_data.get("email", "")
+            name = user_data.get("name", "")
+
+            # If name is not provided, try to build it from first and last name
+            if not name:
+                first_name = user_data.get("first_name", "")
+                last_name = user_data.get("last_name", "")
+                if first_name or last_name:
+                    name = f"{first_name} {last_name}".strip()
+                else:
+                    # Use email as fallback for name
+                    name = email.split("@")[0]
+
+            # Ensure user exists in the database
+            user_profile, created = await self.connect_service._get_or_create_user_profile(
+                uid=cas_uid,
+                email=email,
+                name=name
+            )
+
+            # Use the actual DB uid in the user_data for token creation
+            user_data["uid"] = user_profile.uid
+
+            # Log user profile creation/retrieval
+            if created:
+                log_with_context(
+                    self.logger,
+                    "info",
+                    "Created new user profile in database",
+                    user_uid=user_profile.uid,
+                    user_email=email,
+                    component="auth_service"
+                )
+            else:
+                log_with_context(
+                    self.logger,
+                    "info",
+                    "Retrieved existing user profile from database",
+                    user_uid=user_profile.uid,
+                    user_email=email,
+                    component="auth_service"
+                )
+
             # Create JWT token
             token = create_access_token(user_data)
 
             # Create user response model
             user_response = UserResponse(
-                uid=user_data.get("uid", ""),
+                uid=user_profile.uid,  # Use the actual DB uid
                 email=user_data.get("email", ""),
                 name=user_data.get("name"),
                 first_name=user_data.get("first_name"),
@@ -288,7 +361,7 @@ class AuthService:
                 self.logger,
                 "info",
                 "Created user session",
-                user_uid=user_data.get("uid"),
+                user_uid=user_profile.uid,
                 user_email=user_data.get("email"),
                 token_expires_in=self.settings.jwt_expiry_hours,
                 component="auth_service"
@@ -342,6 +415,7 @@ class AuthService:
 
             # Create user response from token payload
             user_response = UserResponse(
+                # This is now the DB uid from connect service
                 uid=payload.get("uid", ""),
                 email=payload.get("email", ""),
                 name=payload.get("name"),
@@ -404,6 +478,12 @@ class AuthService:
             ```
         """
         try:
+            if not self.cas_client:
+                raise CASError(
+                    "CAS client not properly initialized",
+                    details={"error": "CAS library not available"}
+                )
+
             logout_url = self.cas_client.get_logout_url(redirect_url)
 
             log_with_context(
