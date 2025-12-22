@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Typography,
@@ -10,7 +10,6 @@ import {
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import { InstagramLogoIcon } from "@radix-ui/react-icons";
-import { Scale } from "@mui/icons-material";
 
 type MemberBoxProps = {
   name: string;
@@ -32,41 +31,20 @@ const MemberBox: React.FC<MemberBoxProps> = ({
   const theme = useTheme();
   const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const borderColor = useMemo(() => {
-    const colors = ["#ffadad", "#bdb2ff", "#a8d1d1", "#ffb9eb", "#8bc9ff"];
-    const randomIndex = Math.floor(Math.random() * colors.length);
-    return colors[randomIndex];
-  }, []);
-
-  const nameRef = useRef<HTMLDivElement>(null);
-  const [fontSize, setFontSize] = useState(isPhone ? 24 : 32);
-
-  useEffect(() => {
-    const resizeFont = () => {
-      if (nameRef.current) {
-        const parentWidth = nameRef.current.offsetWidth;
-        const childWidth = nameRef.current.scrollWidth;
-
-        if (childWidth > parentWidth) {
-          setFontSize((prev) => prev - 1);
-        }
-      }
-    };
-
-    resizeFont();
-  }, [name]);
-
   return (
     <Box
       sx={{
         flex: "1 1 auto",
-        margin: "2rem",
+        margin: { xs: "1rem", sm: "1.5rem", md: "2rem" }, // Reduced margin for mobile
         backgroundColor: "#eee",
         color: "#373737",
         padding: "1.5rem",
         borderRadius: "13px",
         boxSizing: "border-box",
         transition: "background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease",
+        height: "100%", // Ensures it fills the parent grid height
+        display: "flex",
+        flexDirection: "column",
         "&:hover": {
           transform: "scale(1.03)",
           backgroundColor: "#bbb",
@@ -99,56 +77,64 @@ const MemberBox: React.FC<MemberBoxProps> = ({
         />
       </Box>
 
-      {/* Member Details */}
+      {/* Member Name - FIXED AUTOMATIC RESIZING */}
       <Typography
         variant="h2"
         align="center"
-        ref={nameRef}
         sx={{
-          fontSize: `${fontSize}px`,
-          lineHeight: 1.2,
-          marginBottom: "0.25rem",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
+          // This automatically scales font between 1rem and 1.5rem based on container width
+          fontSize: "clamp(1rem, 2.5vw, 1.5rem)", 
+          fontWeight: "bold",
+          lineHeight: 1.1,
+          marginBottom: "0.5rem",
           width: "100%",
-          "&:hover": {
-            overflow: "visible",
-          },
+          
+          // Allow long names to wrap to 2 lines if needed
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          wordWrap: "break-word",
+          minHeight: "2.2em", // Keeps boxes aligned even if one has 1 line and other has 2
         }}
       >
         {name}
       </Typography>
+
+      {/* Position */}
       <Typography
         variant="h3"
         align="center"
         sx={{
-          fontSize: isPhone ? "1rem" : "1.5rem",
-          marginBottom: "0.25rem",
+          fontSize: isPhone ? "0.9rem" : "1.1rem",
+          marginBottom: "auto", // Pushes social icons to the bottom
+          color: "#555",
         }}
       >
         {position}
       </Typography>
+
+      {/* Social Icons */}
       <Box
         sx={{
           textAlign: "center",
+          marginTop: "1rem",
           "& a": {
             color: "#3a4052",
-            justifyContent: "center",
             "&:hover": {
               color: "#6699ee",
             },
           },
         }}
       >
-        <IconButton href={githubLink} color="inherit">
-          <GitHubIcon />
+        <IconButton href={githubLink} color="inherit" size="small">
+          <GitHubIcon fontSize="small" />
         </IconButton>
-        <IconButton href={InstaID} color="inherit">
+        <IconButton href={InstaID} color="inherit" size="small">
           <InstagramLogoIcon />
         </IconButton>
-        <IconButton href={linkedinLink} color="inherit">
-          <LinkedInIcon />
+        <IconButton href={linkedinLink} color="inherit" size="small">
+          <LinkedInIcon fontSize="small" />
         </IconButton>
       </Box>
     </Box>
