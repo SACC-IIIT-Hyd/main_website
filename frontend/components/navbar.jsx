@@ -33,7 +33,7 @@ const NavbarComponent = ({ isSticky = false }) => {
     { href: '/team', label: 'Team' },
     { href: '/yearbooks', label: 'Yearbooks' },
     { href: '/alumni', label: 'Alumni' },
-    { href: '/connect', label: 'Connect' }
+    // { href: '/connect', label: 'Connect' }
   ];
 
   const protectedPages = ['/yearbooks', '/alumni', '/connect'];
