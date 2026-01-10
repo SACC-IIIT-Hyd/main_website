@@ -1,10 +1,13 @@
-import NavbarComponent from "../components/navbar";
-import { Box, Grid } from "@mui/material";
-import "@styles/yearbooks.scss";
-import Bottom from "@components/footer";
-import { getAlumniYears } from "../lib/alumni";
-import { useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
+
+import { Box, Grid, useMediaQuery, useTheme } from "@mui/material";
+import Bottom from "@components/footer";
+
+import "@styles/global/pageStyles.scss";
+import "@styles/yearbooks.scss";
+
+import NavbarComponent from "../components/navbar";
+import { getAlumniYears } from "../lib/alumni";
 
 // Get all alumni years at build time
 export async function getStaticProps() {
@@ -58,7 +61,7 @@ export default function Alumni({ alumniYears }) {
                 <div className="yearbook-container">
                     <div className="text-content">
                         <h1 className="title">Alumni</h1>
-                        <p className="subtitle">Meet Our Alumni Batches!</p>
+                        <p className="subtitle">Meet The Batches!</p>
                     </div>
                 </div>
 

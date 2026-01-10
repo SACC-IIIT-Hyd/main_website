@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MemberBox from './member_box';
 import { Box, Typography, Grid } from '@mui/material';
 
@@ -20,7 +20,6 @@ const ParentBox: React.FC<ParentBoxProps> = ({ title, members }) => {
   const [titleVisible, setTitleVisible] = useState(false);
   const [gridVisible, setGridVisible] = useState(false);
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
-  const [rowHeights, setRowHeights] = useState<number[]>([]);
 
   const titleRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -87,55 +86,14 @@ const ParentBox: React.FC<ParentBoxProps> = ({ title, members }) => {
     };
   }, [visibleItems]);
 
-  // Adjust row heights
-  const adjustRowHeights = useCallback(() => {
-    if (!gridRef.current) return;
-
-    const rows: HTMLElement[][] = [];
-    const items = Array.from(gridRef.current.querySelectorAll('.grid-item')) as HTMLElement[];
-
-    let currentTopOffset = null;
-    let currentRow: HTMLElement[] = [];
-
-    items.forEach((item) => {
-      const offsetTop = item.offsetTop;
-
-      if (currentTopOffset === null || offsetTop === currentTopOffset) {
-        currentRow.push(item);
-        currentTopOffset = offsetTop;
-      } else {
-        rows.push(currentRow);
-        currentRow = [item];
-        currentTopOffset = offsetTop;
-      }
-    });
-
-    if (currentRow.length > 0) rows.push(currentRow);
-
-    const newHeights = rows.map((row) => {
-      const maxHeight = Math.max(...row.map((item) => item.offsetHeight));
-      row.forEach((item) => (item.style.height = `${maxHeight}px`));
-      return maxHeight;
-    });
-
-    setRowHeights(newHeights);
-  }, []);
-
-  useEffect(() => {
-    adjustRowHeights();
-    window.addEventListener('resize', adjustRowHeights);
-    return () => window.removeEventListener('resize', adjustRowHeights);
-  }, [adjustRowHeights]);
-
   return (
     <Box
       sx={{
-        m: 0,
-        p: 0,
-        marginLeft: { xs: 5, sm: 8, md: 10, lg: 15 },
-        marginRight: { xs: 5, sm: 8, md: 10, lg: 15 },
-        paddingTop: 1,
-        paddingBottom: 1,
+        width: "100%",
+        boxSizing: "border-box",
+        px: { xs: 3, sm: 6, md: 8, lg: 12 },
+        pt: 2,
+        pb: 3,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -147,8 +105,8 @@ const ParentBox: React.FC<ParentBoxProps> = ({ title, members }) => {
           width: '100%',
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: 3,
-          marginTop: 7,
+          marginBottom: { xs: 3, sm: 4, md: 5 },
+          marginTop: { xs: 5, sm: 6, md: 7 },
           pt: 2,
           pb: 2,
         }}
@@ -157,25 +115,29 @@ const ParentBox: React.FC<ParentBoxProps> = ({ title, members }) => {
           ref={titleRef}
           variant="h1"
           sx={{
-            fontSize: { xs: '2.5rem', sm: '2.5rem', md: '3rem' },
+            fontSize: { xs: '2.5rem', sm: '2.75rem', md: '3.25rem' },
             color: 'rgba(248, 114, 114, 1)',
             fontWeight: 'bold',
             fontFamily: '"Noto Sans", serif',
             textAlign: 'center',
             position: 'relative',
             opacity: titleVisible ? 1 : 0,
-            transform: titleVisible ? 'translateY(0)' : 'translateY(-20px)',
-            transition: 'all 0.6s ease-out',
+            transform: titleVisible ? 'translateY(0)' : 'translateY(-30px)',
+            transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+            letterSpacing: '1px',
+            textShadow: '0px 4px 12px rgba(248, 114, 114, 0.3)',
             '&::after': {
               content: '""',
               position: 'absolute',
-              bottom: '-10px',
-              left: 0,
-              width: titleVisible ? '100%' : '0%',
-              height: '3px',
-              backgroundColor: 'white',
-              transition: 'width 0.6s ease-out',
-              transformOrigin: 'left',
+              bottom: '-12px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: titleVisible ? '60%' : '0%',
+              height: '4px',
+              background: 'linear-gradient(90deg, transparent, white, transparent)',
+              transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s',
+              borderRadius: '2px',
+              boxShadow: '0px 2px 8px rgba(255, 255, 255, 0.3)',
             },
           }}
         >
@@ -188,30 +150,35 @@ const ParentBox: React.FC<ParentBoxProps> = ({ title, members }) => {
       <Grid
         container
         justifyContent="center"
-        alignItems="stretch" // Ensures all children are the same height
-        spacing={2}
+        alignItems="stretch"
+        spacing={{ xs: 2, sm: 3, md: 3.5, lg: 4 }}
         sx={{
           opacity: gridVisible ? 1 : 0,
-          transform: gridVisible ? "translateY(0)" : "translateY(20px)",
-          transition: "all 0.8s ease-out",
+          transform: gridVisible ? "translateY(0)" : "translateY(30px)",
+          transition: "all 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
+          padding: { xs: "1rem 0", sm: "1.5rem 0", md: "2rem 0" },
         }}
       >
         {members.slice(0, 100).map((member, index) => (
           <Grid
             item
             xs={12}
-            sm={6}
-            md={4}
-            lg={3}
+            sm={12}
+            md={6}
+            lg={4}
+            xl={3}
             key={index}
-            className="grid-item md:mb-5 sm:mb-10 lg:mb-5 xl:mb-5"
+            className="grid-item"
             id={String(index)}
             sx={{
               display: "flex",
               flexDirection: "column",
               opacity: visibleItems.includes(index) ? 1 : 0,
-              transform: visibleItems.includes(index) ? "translateY(0)" : "translateY(20px)",
-              transition: "all 0.5s ease-out",
+              transform: visibleItems.includes(index) 
+                ? "translateY(0) scale(1)" 
+                : "translateY(40px) scale(0.95)",
+              transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.08}s`,
+              willChange: "transform, opacity",
             }}
           >
             <MemberBox

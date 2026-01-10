@@ -34,21 +34,34 @@ const MemberBox: React.FC<MemberBoxProps> = ({
   return (
     <Box
       sx={{
-        flex: "1 1 auto",
-        margin: { xs: "1rem", sm: "1.5rem", md: "2rem" }, // Reduced margin for mobile
-        backgroundColor: "#eee",
-        color: "#373737",
+        width: "100%",
+        maxWidth: "350px",
+        height: "100%",
+        margin: "0 auto",
+        background: "linear-gradient(135deg, rgba(63, 43, 53, 0.95) 0%, rgba(45, 29, 40, 0.95) 100%)",
+        color: "#EFDFC2",
         padding: "1.5rem",
-        borderRadius: "13px",
+        // minWidth: "260px", // Removed minWidth to allow card to shrink if needed
+        borderRadius: "20px",
         boxSizing: "border-box",
-        transition: "background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease",
-        height: "100%", // Ensures it fills the parent grid height
+        border: "1px solid rgba(185, 166, 178, 0.2)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.5), inset 0px 1px 0px rgba(255, 255, 255, 0.05)",
+        
         "&:hover": {
-          transform: "scale(1.03)",
-          backgroundColor: "#bbb",
-          boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.15)",
+          transform: "translateY(-6px) scale(1.02)",
+          boxShadow: `
+            0px 20px 40px rgba(248, 114, 114, 0.25),
+            0px 0px 40px rgba(185, 166, 178, 0.15),
+            inset 0px 1px 0px rgba(255, 255, 255, 0.1)
+          `,
         },
       }}
     >
@@ -56,46 +69,50 @@ const MemberBox: React.FC<MemberBoxProps> = ({
       <Box
         sx={{
           width: "100%",
-          paddingTop: "100%",
+          maxWidth: "300px",
+          height: "auto",
+          aspectRatio: "1/1",
           position: "relative",
           overflow: "hidden",
-          borderRadius: "8px",
-          marginBottom: "2vh",
+          borderRadius: "16px",
+          marginBottom: "1.5rem",
+          marginLeft: "auto",
+          marginRight: "auto",
+          border: "2px solid rgba(248, 114, 114, 0.3)",
+          boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.6), inset 0px 2px 4px rgba(255, 255, 255, 0.05)",
+          backgroundColor: "#2a1a24",
+          flexShrink: 0,
         }}
       >
-        <img
+        <Box
+          component="img"
           src={imgSrc}
           alt={name}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
+          sx={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            objectPosition: "center",
+            display: "block",
+            transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         />
       </Box>
 
-      {/* Member Name - FIXED AUTOMATIC RESIZING */}
+      {/* Member Name */}
       <Typography
         variant="h2"
         align="center"
         sx={{
-          // This automatically scales font between 1rem and 1.5rem based on container width
-          fontSize: "clamp(1rem, 2.5vw, 1.5rem)", 
-          fontWeight: "bold",
-          lineHeight: 1.1,
+          fontSize: "1.5rem",
+          fontWeight: "700",
+          lineHeight: 1.3,
           marginBottom: "0.5rem",
-          width: "100%",
-          
-          // Allow long names to wrap to 2 lines if needed
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
+          color: "#EFDFC2",
+          whiteSpace: "nowrap",
           overflow: "hidden",
-          wordWrap: "break-word",
-          minHeight: "2.2em", // Keeps boxes aligned even if one has 1 line and other has 2
+          textOverflow: "ellipsis",
+          width: "100%",
         }}
       >
         {name}
@@ -106,23 +123,38 @@ const MemberBox: React.FC<MemberBoxProps> = ({
         variant="h3"
         align="center"
         sx={{
-          fontSize: isPhone ? "0.9rem" : "1.1rem",
-          marginBottom: "auto", // Pushes social icons to the bottom
-          color: "#555",
+          fontSize: "1rem",
+          marginBottom: "1.5rem",
+          color: "#b9a6b2",
+          fontWeight: 500,
+          letterSpacing: "0.5px",
+          textTransform: "uppercase",
         }}
       >
         {position}
       </Typography>
-
       {/* Social Icons */}
       <Box
         sx={{
-          textAlign: "center",
-          marginTop: "1rem",
+          display: "flex",
+          justifyContent: "center",
+          gap: "1rem",
           "& a": {
-            color: "#3a4052",
+            color: "#b9a6b2",
+            backgroundColor: "rgba(185, 166, 178, 0.1)",
+            borderRadius: "50%",
+            padding: "0.6rem",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            border: "1px solid rgba(185, 166, 178, 0.2)",
             "&:hover": {
-              color: "#6699ee",
+              color: "#F87272",
+              backgroundColor: "rgba(248, 114, 114, 0.15)",
+              borderColor: "rgba(248, 114, 114, 0.5)",
+              transform: "translateY(-3px) scale(1.15)",
+              boxShadow: "0px 6px 16px rgba(248, 114, 114, 0.3)",
             },
           },
         }}

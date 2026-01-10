@@ -1,14 +1,15 @@
-import ParentBox from "../components/parent_box";
-import NavbarComponent from "../components/navbar";
-import { Box, CssBaseline } from "@mui/material";
-import Bottom from "@components/footer";
 import React from 'react';
 
-// const ameyimg = "/assets/images/amey.png";
+import { Box, CssBaseline } from "@mui/material";
+import Bottom from "@components/footer";
 
-export default function Home() {
-  
-    const COORDINATOR = [
+import "@styles/global/pageStyles.scss";
+
+import NavbarComponent from "../components/navbar";
+import ParentBox from "../components/parent_box";
+
+export default function Home() {  
+  const COORDINATOR = [
     {
       name: "Aviral Gupta",
       imgSrc: "/assets/images/Aviral.jpeg",
@@ -54,7 +55,7 @@ export default function Home() {
       linkedinLink: "https://www.linkedin.com/in/sahejreet-singh-5a6821377?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
       githubLink: "https://github.com/Sahej-sethi",
       position: "Member",
-    },  
+    },
     {
       name: "Krishna Kaundinya Peddibhotla",
       imgSrc: "/assets/images/SACC_logo.png",
@@ -62,8 +63,7 @@ export default function Home() {
       linkedinLink: "https://www.linkedin.com/in/krishna-kaundinya-peddibhotla-8b2365358/",
       githubLink: "https://github.com/Kaundinya-P",
       position: "Member",
-    },
-
+    }
   ]
   
   const OUTREACH = [
@@ -125,7 +125,7 @@ export default function Home() {
     },
   ];
 
-  const DESIGN = [
+  const DESIGN_AND_SOCIAL_MEDIA = [
     {
       name: "Vaibhavi Kolipaka",
       imgSrc: "/assets/images/vaibhavi.jpg",
@@ -144,44 +144,21 @@ export default function Home() {
     },
   ];
 
-  const SOCIAL_MEDIA = [
-    {
-      name: "Vaibhavi Kolipaka",
-      imgSrc: "/assets/images/SACC_logo.png",
-      InstaID: "vaibooooo",
-      linkedinLink: "./team",
-      githubLink: "./team",
-      position: "Head",
-    },
-    {
-      name: "Shradha Kedia",
-      imgSrc: "/assets/images/SACC_logo.png",
-      InstaID: "./team",
-      linkedinLink: "https://www.linkedin.com/in/shradha-kedia-b67906375/",
-      githubLink: "./team",
-      position: "Member",
-    },
-  ];
-
-
-
   return (
     <section>
       <NavbarComponent isSticky={true} />
 
-      <Box
-        sx={{
-          backgroundColor: "#1D141A",
-          color: "white",
-          minHeight: "60vh",
-          marginTop: "55px",
-        }}
-      >
-        <CssBaseline />
-        <Box sx={{ height: "37px" }} />
+      <Box className="backdrop">
+        <div className="title-container">
+          <div className="title-content">
+            <h1 className="title">Meet the Team!</h1>
+            <p className="subtitle">The People Behind the Scenes</p>
+          </div>
+        </div>
+
         <ParentBox title="Co-ordinators" members={COORDINATOR} />
         <ParentBox title="Tech Team" members={TECH} />
-        <ParentBox title="Design and Social Media Team" members={DESIGN} />
+        <ParentBox title="Design and Social Media Team" members={DESIGN_AND_SOCIAL_MEDIA} />
         <ParentBox title="Logistics Team" members={LOGISTICS} />
         <ParentBox title="Outreach Team" members={OUTREACH} />
       </Box>
