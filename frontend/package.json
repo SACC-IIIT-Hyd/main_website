@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev_custom": "next dev -p 8000",
-    "dev": "next dev -p 80",
+    "dev": "./node_modules/.bin/next dev -p 80",
     "build": "next build",
     "start": "next start -p 80",
     "lint": "next lint"

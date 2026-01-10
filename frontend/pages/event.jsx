@@ -11,42 +11,48 @@ import Head from 'next/head';
 const eventsData = [
     {
         id: 1,
+        name: 'Lab Awarness Event',
+        image: '/assets/images/las.png',
+        description: "Our latest initiative, the Lab Awareness Event, features alumni and seniors sharing insights into their research labs to help new students make informed choices about the labs."
+    },
+    {
+        id: 2,
         name: 'Opportunities Awareness Talk',
         image: '/assets/images/events/oat.jpg',
         description: "The Opportunity Awareness Talks (OAT) aims to introduce IIIT students to diverse career paths beyond the institute's core focus on Computer Science and Electronics. Featuring distinguished alumni from various fields, each session delves into niche topics, offering insights on breaking into and excelling in those domains. Through engaging discussions and direct interaction with speakers, OAT helps students explore potential career paths and stay informed about industry trends."
     },
     {
-        id: 2,
+        id: 3,
         name: 'Chai pe Charcha',
         image: '/assets/images/events/cpc.jpg',
         description: 'Chai Pe Charcha is a candid and engaging platform, bringing the IIIT family together for meaningful discussions over a cup of tea. Alumni from diverse backgrounds share their journeys, expertise and insights, covering topics from career guidance and industry trends to personal anecdotes and mentorship. Featuring interactive sessions, it fosters connections, encourages open dialogue and helps students navigate college challenges while preparing for life beyond.'
     },
     {
-        id: 3,
+        id: 4,
         name: 'Alumni Unfiltered',
         image: '/assets/images/events/au.jpg',
         description: 'Alumni Unfiltered is a casual and dynamic talk session held during induction week, where freshers connect with alumni to seek guidance and hear stories from their college days and life experiences. This engaging platform allows open discussions on topics ranging from academics to college life, humorously addressing common rookie mistakes, emphasizing time management, and providing clarity on misconceptions. The session offers freshers valuable insights and a glimpse into the journey ahead, fostering a meaningful connection with the alumni.'
     },
     {
-        id: 4,
+        id: 5,
         name: 'Yearbook & Farewell',
         image: '/assets/images/events/yb.jpg',
         description: "SACC is involved in the farewell ceremony for the graduating batch, where they receive their yearbooks and other mementos. The Yearbook is a cherished keepsake for each graduating batch, capturing their unique journey through testimonials, inside jokes, comments, fun captions, and pictures. From the excitement of orientation to the milestone of graduation, the Yearbook allows students to relive their college days, celebrating unforgettable moments and lifelong bonds formed at IIIT."
     },
     {
-        id: 5,
+        id: 6,
         name: 'Convocation',
         image: '/assets/images/events/conv.jpg',
         description: "The Convocation ceremony is a grand event that marks the culmination of the academic journey for students at IIIT Hyderabad. SACC plays a crucial role in organizing the event, ensuring a seamless and memorable experience for the graduating batch. From managing logistics and coordinating with the administration to planning the ceremony and overseeing the proceedings, SACC ensures that the Convocation is a fitting tribute to the hard work and dedication of the students."
     },
     {
-        id: 6,
+        id: 7,
         name: 'College Karawan',
         image: '/assets/images/events/kw.jpg',
         description: 'College Karwaan is an online compendium, curated by the SACC, that celebrates the journey of students at IIIT Hyderabad. Narrated by graduating students, these articles capture the highs, lows and defining moments of college life—from the nervous excitement of the first year to the challenges of final-year placements. Serving as a repository of priceless memories, College Karwaan preserves the legacy of those who have walked through the hallowed halls of IIIT Hyderabad.'
     },
     {
-        id: 7,
+        id: 8,
         name: 'Vision Talks (proposal)',
         image: '/assets/images/events/vt.jpg',
         description: 'An annual event that coincides with the Foundation Day of the Institute, where prominent alumni from different fields are invited to deliver talks and share their insights and experiences with the students'
