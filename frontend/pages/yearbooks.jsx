@@ -1,8 +1,11 @@
-import NavbarComponent from "../components/navbar";
+import { useTheme } from "@mui/material";
 import { Box, Grid } from "@mui/material";
+
+import "@styles/global/pageStyles.scss";
 import "@styles/yearbooks.scss";
+
+import NavbarComponent from "../components/navbar";
 import Bottom from "@components/footer";
-import { useMediaQuery, useTheme } from "@mui/material";
 
 const yearbookData = [
   { year: "2k21", previewImage: "/assets/yearbooks/2k21_preview.png" },
@@ -14,22 +17,16 @@ const yearbookData = [
 
 export default function Home() {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <section>
       <NavbarComponent isSticky />
       <Box className="backdrop">
-        <div className="yearbook-container">
-          <div className="text-content">
+        <div className="title-container">
+          <div className="title-content">
             <h1 className="title">Yearbooks</h1>
             <p className="subtitle">Revisit the Memories!</p>
           </div>
-          {/* <img
-            className="image"
-            src="/assets/images/fly.webp"
-            alt="Butterfly"
-          /> */}
         </div>
 
         <Grid

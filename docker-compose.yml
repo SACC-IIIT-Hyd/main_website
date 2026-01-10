@@ -41,6 +41,7 @@ services:
             - ./.env
         volumes:
             - ./frontend:/app
+            - /app/node_modules
         tty: true
 
     nginx:
