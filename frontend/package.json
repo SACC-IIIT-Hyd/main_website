@@ -7,7 +7,9 @@
     "dev": "./node_modules/.bin/next dev -p 80",
     "build": "next build",
     "start": "next start -p 80",
-    "lint": "next lint"
+    "lint": "next lint",
+    "compress-images": "python3 ../scripts/compress_images.py",
+    "compress-pdf": "python3 ../scripts/compress_pdf.py --all"
   },
   "dependencies": {
     "@emotion/react": "^11.13.0",

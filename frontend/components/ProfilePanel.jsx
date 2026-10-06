@@ -5,8 +5,6 @@ import { Input } from "@/components/ui/input";
 import { X, Trash2, Plus } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
 
-import "@/styles/ProfilePanel.scss";
-
 const ProfilePanel = ({ userProfile, onDeleteIdentifier, onAddIdentifier, onClose }) => {
   const [showConfirm, setShowConfirm] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);

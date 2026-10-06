@@ -1,6 +1,23 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+
+// Global Styles
 import '@styles/globals.scss';
+import '@styles/global/pageStyles.scss';
+import '@styles/navbar.scss';
+import '@styles/footer.scss';
+import '@styles/home.scss';
+import '@styles/about.scss';
+import '@styles/events.scss';
+import '@styles/team.scss';
+import '@styles/yearbooks.scss';
+import '@styles/embla.css';
+import '@styles/flipbook.css';
+import '@styles/connect.scss';
+import '@styles/ProfilePanel.scss';
+import '@styles/CommunityAdminPanel.scss';
+import '@styles/SuperAdminPanel.scss';
+
 
 const getPageTitle = (path) => {
   switch (path) {

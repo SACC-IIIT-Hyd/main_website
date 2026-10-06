@@ -41,9 +41,18 @@ This directory contains the dynamic alumni pages system. The system automaticall
 
 4. All image paths in the JSON should be relative to the year's images directory. For example, if your image is at `/public/assets/images/2022/student_pfp.png`, reference it as `images/student_pfp.png` in the JSON.
 
-5. The system will automatically:
+5. **Compress Batch Images (Important for Performance)**:
+   Before deploying, run the image optimization script on the new batch directory to downscale high-resolution images to web-optimized sizes:
+   ```bash
+   # From project root:
+   make compress-images DIR=frontend/public/assets/images/YYYY
+   # Or using Python directly:
+   python3 scripts/compress_images.py --dir frontend/public/assets/images/YYYY
+   ```
+
+6. The system will automatically:
    - Add the new batch to the main alumni page
-   - Create a dedicated batch page with all alumni
+   - Create a dedicated batch page with infinite scroll
    - Create individual alumni profile pages
 
-No code changes are required to add a new batch - just add the JSON file and images!
+No code changes are required to add a new batch - just add the JSON file, images, and run the compression script!

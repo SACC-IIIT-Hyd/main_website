@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import NavbarComponent from "../../../components/navbar";
+import AuthGuard from "../../../components/AuthGuard";
 import Bottom from "@components/footer";
 import { Box } from "@mui/material";
 import Link from "next/link";
@@ -105,8 +106,9 @@ export default function UserPage({ year, user, hasImagesDir }) {
         : user.testimonials?.slice(0, 3);
 
     return (
-        <section style={{ background: '#18101A', minHeight: '100vh', color: 'white' }}>
-            <NavbarComponent isSticky={true} />
+        <AuthGuard>
+            <section style={{ background: '#18101A', minHeight: '100vh', color: 'white' }}>
+                <NavbarComponent isSticky={true} />
             <Box className="backdrop" style={{ backgroundColor: '#201824', color: 'white', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 120, paddingBottom: 40, paddingInline: '5%', border: '1.5px solid #32243a' }}>
                 <Link href={`/alumni/${year}`} style={{
                     color: '#e0d7f7',
@@ -342,5 +344,6 @@ export default function UserPage({ year, user, hasImagesDir }) {
             </Box>
             <Bottom />
         </section>
+        </AuthGuard>
     );
 }

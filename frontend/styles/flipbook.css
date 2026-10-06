@@ -83,3 +83,47 @@
     transform: scale3d(1, 1, 1);
   }
 }
+
+/* PDF Annotation and Link Layer */
+.react-pdf__Page {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.react-pdf__Page__canvas {
+  margin: 0 auto !important;
+  display: block !important;
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.react-pdf__Page__annotations {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+.react-pdf__Page__annotations section,
+.react-pdf__Page__annotations .linkAnnotation {
+  position: absolute !important;
+  pointer-events: auto !important;
+}
+
+.react-pdf__Page__annotations a {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.react-pdf__Page__annotations a:hover {
+  background-color: rgba(255, 215, 0, 0.2) !important;
+  border-radius: 2px !important;
+}

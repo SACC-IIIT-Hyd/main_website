@@ -1,36 +1,35 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import NavbarComponent from '@components/navbar';
-
-import '@styles/home.scss';
 
 const Home = () => {
   const [isSticky, setIsSticky] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
 
-  const changeBackground = () => {
-    if (window.scrollY < 100) {
-      setIsSticky(false);
-    } else {
-      setIsSticky(true);
-    }
-  };
-
   useEffect(() => {
-    window.addEventListener("scroll", changeBackground);
-    return () => {-
-      window.removeEventListener("scroll", changeBackground);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsSticky(window.scrollY >= 100);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-
-  useEffect(() => {
-    console.log("isSticky:", isSticky);
-  }, [isSticky]);
 
   useEffect(() => {
     const cookies = document.cookie.split(";");
     for (const cookie of cookies) {
       if (cookie.includes("Authorization_YearBook")) {
         setAuthenticated(true);
+        break;
       }
     }
   }, []);
@@ -47,17 +46,18 @@ const Home = () => {
               muted
               loop
               playsInline
+              preload="metadata"
             ></video>
             <div className="content">
               <h1>SACC</h1>
               <p>Presents</p>
-              <h3>Yearbook of 2021</h3>
-              <a
-                href={authenticated ? "/yearbooks" : "/api/login"}
+              <h3>Yearbook of 2022</h3>
+              <Link
+                href={authenticated ? "/yearbook?year=2k22" : "/api/login"}
                 className="btn"
               >
                 Access Here
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -75,7 +75,7 @@ const Home = () => {
             <img src="/assets/images/linkedin.png" alt="LinkedIn" />
           </a>
         </div>
-        <p>&copy; Student Alumni Connect Cell 2025</p>
+        <p>&copy; Student Alumni Connect Cell 2026</p>
       </div>
     </section>
   );

@@ -1,5 +1,4 @@
 import React from 'react';
-import '@styles/footer.scss';
 import { colors } from '@mui/material';
 
 const Bottom = () => {
@@ -52,7 +51,7 @@ const Bottom = () => {
       {/* Copyright */}
       <div className="copyright">
         <p className='copyText'>
-          © 2025 Student Alumni Connect Cell, IIIT Hyderabad
+          © 2026 Student Alumni Connect Cell, IIIT Hyderabad
         </p>
       </div>
     </section>

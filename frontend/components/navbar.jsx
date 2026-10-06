@@ -1,6 +1,5 @@
-"use client";
 import React, { useState, useEffect } from "react";
-import "@styles/navbar.scss";
+import Link from "next/link";
 
 const NavbarComponent = ({ isSticky = false }) => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -47,13 +46,13 @@ const NavbarComponent = ({ isSticky = false }) => {
   return (
     <nav className={`header-nav ${isSticky ? "sticky" : ""}`}>
       <div className="navbar-container">
-        <a href="/" className="navbar-brand">
+        <Link href="/" className="navbar-brand">
           <img
             src="/assets/images/collegeLogo.png"
             alt="Logo"
             className="logo"
           />
-        </a>
+        </Link>
 
         <button
           className="navbar-toggler"
@@ -64,17 +63,15 @@ const NavbarComponent = ({ isSticky = false }) => {
 
         <div className={`navbar-collapse ${isMenuOpen ? 'show' : ''}`}>
           <div className="navbar-nav">
-            {navItems.map((item, idx) => (
-              <a
+            {navItems.map((item) => (
+              <Link
                 key={item.href}
                 href={item.href}
                 className="nav-link"
-                target={item.label === 'Alumni' ? '_blank' : undefined}
-                rel={item.label === 'Alumni' ? 'noopener noreferrer' : undefined}
                 onClick={e => handleNavClick(e, item.href)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

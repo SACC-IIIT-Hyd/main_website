@@ -18,7 +18,6 @@ import {
   Globe,
 } from "lucide-react";
 import { toast } from "sonner";
-import "@/styles/SuperAdminPanel.scss";
 
 // Simple Textarea component
 const Textarea = ({ className, ...props }) => (

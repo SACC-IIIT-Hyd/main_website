@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import { Box, Grid, useMediaQuery, useTheme } from "@mui/material";
 import Bottom from "@components/footer";
 
-import "@styles/global/pageStyles.scss";
-import "@styles/yearbooks.scss";
-
 import NavbarComponent from "../components/navbar";
+import AuthGuard from "../components/AuthGuard";
 import { getAlumniYears } from "../lib/alumni";
 
 // Get all alumni years at build time
@@ -31,6 +30,9 @@ export default function Alumni({ alumniYears }) {
         const data = alumniYears.map((year) => {
             let previewImage;
             switch (year) {
+                case "2022":
+                    previewImage = "/assets/yearbooks/2k22_preview.png";
+                    break;
                 case "2021":
                     previewImage = "/assets/yearbooks/2k21_preview.png";
                     break;
@@ -55,59 +57,61 @@ export default function Alumni({ alumniYears }) {
     }, [alumniYears]);
 
     return (
-        <section>
-            <NavbarComponent isSticky={true} />
-            <Box className="backdrop">
-                <div className="yearbook-container">
-                    <div className="text-content">
-                        <h1 className="title">Alumni</h1>
-                        <p className="subtitle">Meet The Batches!</p>
-                    </div>
-                </div>
-
-                <Grid
-                    container
-                    spacing={9}
-                    justifyContent="center"
-                    alignItems="center"
-                    className="yearbooksGrid"
-                >
-                    {alumniData.length > 0 ? (
-                        alumniData.map((alumni, index) => (
-                            <Grid
-                                item
-                                key={index}
-                                xs={18}
-                                sm={6}
-                                md={4.15}
-                                lg={4}
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                                className="yearbookContainer"
-                            >
-                                <a
-                                    href={`/alumni/${alumni.year}`}
-                                    className="yearbookPreview"
-                                    style={{
-                                        backgroundImage: `url(${alumni.previewImage})`,
-                                    }}
-                                >
-                                    <Box className="yearbookLabel">
-                                        <h4>Batch of</h4>
-                                        <h2>{alumni.year}</h2>
-                                    </Box>
-                                </a>
-                            </Grid>
-                        ))
-                    ) : (
-                        <div className="no-alumni-message">
-                            <h3>No alumni batches found</h3>
+        <AuthGuard>
+            <section>
+                <NavbarComponent isSticky={true} />
+                <Box className="backdrop">
+                    <div className="yearbook-container">
+                        <div className="text-content">
+                            <h1 className="title">Alumni</h1>
+                            <p className="subtitle">Meet The Batches!</p>
                         </div>
-                    )}
-                </Grid>
-            </Box>
-            <Bottom />
-        </section>
+                    </div>
+
+                    <Grid
+                        container
+                        spacing={9}
+                        justifyContent="center"
+                        alignItems="center"
+                        className="yearbooksGrid"
+                    >
+                        {alumniData.length > 0 ? (
+                            alumniData.map((alumni, index) => (
+                                <Grid
+                                    item
+                                    key={index}
+                                    xs={18}
+                                    sm={6}
+                                    md={4.15}
+                                    lg={4}
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    className="yearbookContainer"
+                                >
+                                    <Link
+                                        href={`/alumni/${alumni.year}`}
+                                        className="yearbookPreview"
+                                        style={{
+                                            backgroundImage: `url(${alumni.previewImage})`,
+                                        }}
+                                    >
+                                        <Box className="yearbookLabel">
+                                            <h4>Batch of</h4>
+                                            <h2>{alumni.year}</h2>
+                                        </Box>
+                                    </Link>
+                                </Grid>
+                            ))
+                        ) : (
+                            <div className="no-alumni-message">
+                                <h3>No alumni batches found</h3>
+                            </div>
+                        )}
+                    </Grid>
+                </Box>
+                <Bottom />
+            </section>
+        </AuthGuard>
     );
 }

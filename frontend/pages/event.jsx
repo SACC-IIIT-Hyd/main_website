@@ -1,4 +1,3 @@
-import '@styles/events.scss';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Bottom from '@components/footer';
 import Typewriter from '@lib/events_page/TypeWriter';

@@ -1,13 +1,11 @@
 import { useTheme } from "@mui/material";
 import { Box, Grid } from "@mui/material";
 
-import "@styles/global/pageStyles.scss";
-import "@styles/yearbooks.scss";
-
 import NavbarComponent from "../components/navbar";
 import Bottom from "@components/footer";
 
 const yearbookData = [
+  { year: "2k22", previewImage: "/assets/yearbooks/2k22_preview.png" },
   { year: "2k21", previewImage: "/assets/yearbooks/2k21_preview.png" },
   { year: "2k20", previewImage: "/assets/yearbooks/2k20_preview.jpg" },
   { year: "2k19", previewImage: "/assets/yearbooks/2k19_preview.jpg" },

@@ -4,10 +4,9 @@ import NavBarComponent from "@components/navbar";
 import Bottom from "@components/footer";
 import Flipbook from "@components/flipbook";
 
-import "@styles/embla.css";
-
 // Mapping of year identifiers to PDF paths
 const viewerPdfMapping = {
+  "2k22": "./assets/yearbooks/2k22.pdf",
   "2k21": "./assets/yearbooks/2k21.pdf",
   "2k20": "./assets/yearbooks/2k20.pdf",
   "2k19": "./assets/yearbooks/2k19.pdf",
@@ -16,6 +15,7 @@ const viewerPdfMapping = {
 };
 
 const downloadPdfMapping = {
+  "2k22": "./assets/yearbooks/Yearbook_2k22.pdf",
   "2k21": "./assets/yearbooks/Yearbook_2k21.pdf",
 };
 

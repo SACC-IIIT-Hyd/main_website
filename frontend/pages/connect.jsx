@@ -23,7 +23,6 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import "@/styles/connect.scss";
 
 const ConnectPage = () => {
   const [communities, setCommunities] = useState([]);

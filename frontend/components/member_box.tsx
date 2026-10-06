@@ -88,6 +88,8 @@ const MemberBox: React.FC<MemberBoxProps> = ({
           component="img"
           src={imgSrc}
           alt={name}
+          loading="lazy"
+          decoding="async"
           sx={{
             width: "100%",
             height: "100%",

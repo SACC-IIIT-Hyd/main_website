@@ -215,3 +215,10 @@ quick-restore: ## Quick restore from latest backup
 	else \
 		echo "$(RED)No backups found$(NC)"; \
 	fi
+
+# Image & PDF Optimization
+compress-images: ## Compress static images (Usage: make compress-images [DIR=path])
+	@python3 scripts/compress_images.py $(if $(DIR),--dir $(DIR),)
+
+compress-pdf: ## Compress heavy yearbook PDFs (Usage: make compress-pdf [INPUT=path] [OUTPUT=path])
+	@python3 scripts/compress_pdf.py $(if $(INPUT),--input $(INPUT),--all) $(if $(OUTPUT),--output $(OUTPUT),)

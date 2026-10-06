@@ -13,7 +13,6 @@ import {
   Globe,
   Building2,
 } from "lucide-react";
-import "@/styles/CommunityAdminPanel.scss";
 import { Toaster, toast } from "sonner";
 
 const CommunityAdminPanel = ({ onClose }) => {

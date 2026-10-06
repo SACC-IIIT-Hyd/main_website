@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import NavbarComponent from '../components/navbar';
 import Bottom from '@components/footer';
 import { Box, Typography, CssBaseline } from '@mui/material';
-import '@styles/about.scss';
 import GradualSpacing from '@lib/events_page/gradualSpacing';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
