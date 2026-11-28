@@ -76,6 +76,14 @@ export default function Home() {
       githubLink: "https://github.com/avikmjd2",
       position: "Team Head",
     },
+    {
+      name: "Abdullah Rahmani",
+      imgSrc: "/assets/images/rahmani.jpg",
+      InstaID: "https://www.instagram.com/abd.r_1870",
+      linkedinLink: "https://www.linkedin.com/in/abdullah-rahmani-75b3a0373",
+      githubLink: "https://github.com/ARahmani1870",
+      position: "Member",
+    },
   ];
 
   return (

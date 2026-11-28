@@ -9,3 +9,4 @@ logs/
 backups/
 *.sql
 *.sql.gz
+*:Zone.Identifier
